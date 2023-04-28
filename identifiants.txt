@@ -1,0 +1,20 @@
+Comptes Admin :
+
+	- email: malik.harriz@gmail.com
+	- password: Abc12345
+
+
+Compte Rédacteur :
+
+1)
+	- email: cedric.rodony@cgmail
+	- password: Abc12345
+
+2)
+	- email: juju@gmail.com
+	- password: Abc12345
+
+Compte Utilisateur :
+
+	- email: eddie.murphy@gmail.com
+	- password: Boomerang1992
