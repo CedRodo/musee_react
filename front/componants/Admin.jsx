@@ -11,7 +11,7 @@ const Admin = () => {
   ///////////
 
   async function affiche() {
-    await fetch("http://192.168.1.98:4004/admin/utilisateurs/")
+    await fetch("http://10.0.2.2:4004/admin/utilisateurs/")
       .then((response) => response.json())
       .then((data) => setUsers(data));
   }
