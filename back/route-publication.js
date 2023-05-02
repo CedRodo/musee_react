@@ -35,12 +35,13 @@ route.delete("/:id", async function(request, response) {
 route.put("/:id", async function(request, response) {
     const id = request.params.id;
     const { body } = request;
+    const oeuvreOldTitle = await Oeuvre.findById(id).select({titre: 1})
     const oeuvreUpdate = await Oeuvre.findByIdAndUpdate(id, {
         $set: body
     });
 
-    if (!oeuvreUpdate) return response.status(404).json({ message: `L'oeuvre ${id} est introuvable` })
-    response.json({ message: `L'oeuvre ${id} a bien été modifié` });
+    if (!oeuvreUpdate) return response.status(404).json({ message: `L'oeuvre ${oeuvreOldTitle.titre} est introuvable` })
+    response.json({ message: `L'oeuvre ${oeuvreOldTitle.titre} a bien été modifié` });
 });
 
 module.exports = route;

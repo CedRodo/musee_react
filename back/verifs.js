@@ -15,11 +15,12 @@ const schemaOeuvreJoi = Joi.object({
     titre: Joi.string().min(5).max(255).required(),
     type: Joi.string().min(5).max(255).required(),
     auteur: Joi.string().min(5).max(255).required(),
-    description: Joi.string().min(5).max(10000).required(),
+    description: Joi.string().min(5).max(1000).required(),
     image: Joi.string().min(5).max(255).required(),
     imageUrl: Joi.string().min(5).max(255).required(),
-    // date_oeuvre: Joi.date().format("DD/MM/YYYY").required(),
-    // date_publication: Joi.date().format("DD/MM/YYYY").required()
+    date_oeuvre: Joi.date().required(),
+    date_publication: Joi.date().required(),
+    date_modification: Joi.date()
 });
 
 module.exports.schemaUtilisateurJoi = schemaUtilisateurJoi;

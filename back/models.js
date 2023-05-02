@@ -6,9 +6,10 @@ const oeuvreSchema = new Schema({
     auteur: String,
     description: String,
     imageUrl: String,
-    date_oeuvre: Date,
-    date_publication: {type: Date, default: Date.now},
+    date_oeuvre: String,
+    date_publication: Date,
     date_modification: {type: Date, default: null},
+    idRedacteur: { type: Types.ObjectId, ref: "utilisateurs" }
 });
 
 const Oeuvre = model("oeuvres", oeuvreSchema);

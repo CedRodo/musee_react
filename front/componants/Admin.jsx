@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import { TextInput, TouchableHighlight } from "react-native-gesture-handler";
 import SelectDropdown from 'react-native-select-dropdown';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const Admin = ({navigation}) => {
 

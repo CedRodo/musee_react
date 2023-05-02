@@ -34,7 +34,7 @@ app.use(express.urlencoded({ extended: true })); // récupère les informations 
 app.use(routeAccueil);
 app.use("/collections", routeCollection);
 app.use("/admin", routeAdmin);
-app.use("/publication", routePublication);
+app.use("/publications", routePublication);
 app.use("/compte", routeUser);
 app.use(routeConnexion);
 

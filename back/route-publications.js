@@ -1,5 +1,7 @@
 const { Router } = require("express");
-const { Oeuvre } = require("./models");
+const { Utilisateur, Oeuvre } = require("./models");
+const { isValidObjectId } = require("mongoose");
+const { schemaOeuvreJoi } = require("./verifs");
 
 const route = Router();
 

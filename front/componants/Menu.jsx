@@ -9,6 +9,7 @@ import Accueil from './Accueil';
 import Login from './Login';
 import Collection from './Collection';
 import Admin from './Admin';
+import Publication from './Publication';
 
 
 // import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
@@ -48,6 +49,12 @@ const Menu = () => {
                 <Onglet.Screen name="Admin" component={ Admin }  options={{
                     tabBarIcon : () => {
                             return <MaterialCommunityIcons name="key" size={24} color="brown"/>
+                        },
+                     headerShown: false
+                    }}/>
+                <Onglet.Screen name="Publication" component={ Publication }  options={{
+                    tabBarIcon : () => {
+                            return <MaterialCommunityIcons name="book" size={24} color="orange"/>
                         },
                      headerShown: false
                     }}/>
