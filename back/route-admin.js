@@ -1,11 +1,11 @@
 const { Router } = require("express");
 const { Utilisateur } = require("./models");
 const { isValidObjectId } = require("mongoose");
-const { isAdmin } = require("./middleware");
+const { isAdmin, passwordToSend, isValidCompte } = require("./middleware");
 
 const route = Router();
 
-route.get("/utilisateurs/", async function(request, response) {
+route.get("/utilisateurs/", [ isAdmin], async function(request, response) {
 
     const getAllUtilisateurs = await Utilisateur.find().select({ _id: 1, email: 1, role: 1 });
 
@@ -17,7 +17,7 @@ route.get("/utilisateurs/", async function(request, response) {
 
 });
 
-route.get("/utilisateurs/:id", async function(request, response) {
+route.get("/utilisateurs/:id", [ isAdmin], async function(request, response) {
     
     const id = request.params.id;
 
@@ -31,7 +31,7 @@ route.get("/utilisateurs/:id", async function(request, response) {
 
 });
 
-route.delete("/utilisateurs/:id", async function(request, response) {
+route.delete("/utilisateurs/:id", [ isAdmin], async function(request, response) {
     
     const id = request.params.id;
 
@@ -43,16 +43,17 @@ route.delete("/utilisateurs/:id", async function(request, response) {
 
 });
 
-route.put("/utilisateurs/:id", [isAdmin], async function(request, response) {
+route.put("/utilisateurs/:id", [ isAdmin, passwordToSend, isValidCompte ], async function(request, response) {
     
-    const id = request.params.id;
     const { body } = request;
+    const id = request.params.id;
     const utilisateurUpdate = await Utilisateur.findByIdAndUpdate(id, {
-        $set: body
-    }, { new: true }); // { new: true } facultatif : permet de récupérer
+        $set: body,
+        password: request.password
+    });
 
     if (!utilisateurUpdate) return response.status(404).json({ message: `L'utilisateur ${id} est introuvable` })
-    response.json({ message: `L'utilisateur ${id} a bien été modifié` });
+    response.json({ message: `L'utilisateur email: ${request.email}  / id: ${id} a bien été modifié`, oldEmail: request.email, id: id });
 
 });
 

@@ -3,7 +3,7 @@ const Joi = require("joi");
 const schemaUtilisateurJoi = Joi.object({
     email: Joi.string().email({ tlds: { allow: false }}).required(),
     password: Joi.string().regex(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/).required(),
-    role: Joi.string().valid("utilisateur", "redacteur", "admin").required()
+    role: Joi.string().valid("utilisateur", "rédacteur", "admin").required()
 });
 
 const schemaLogin = Joi.object({

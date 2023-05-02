@@ -16,7 +16,7 @@ const Oeuvre = model("oeuvres", oeuvreSchema);
 const utilisateurSchema = new Schema({
     email: String,
     password: String,
-    role: { type: String, enum: ["utilisateur", "redacteur", "admin"], default: "utilisateur" }
+    role: { type: String, enum: ["utilisateur", "rédacteur", "admin"], default: "utilisateur" }
 });
 
 const Utilisateur = model("utilisateurs", utilisateurSchema);

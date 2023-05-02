@@ -1,5 +1,7 @@
 const { isValidObjectId } = require("mongoose");
-const { schemaOeuvreJoi } = require("./verifs");
+const { schemaUtilisateurJoi } = require("./verifs");
+const { genSalt, hash } = require("bcrypt");
+const { Utilisateur } = require("./models");
 const JWT = require("jsonwebtoken");
 
 function idValid(request, response, next) {
@@ -11,6 +13,13 @@ function idValid(request, response, next) {
 function isValidOeuvre(request, response, next) {
     const { body } = request;
     const { error } = schemaOeuvreJoi.validate(body, { abortEarly: false });
+    if (error) return response.status(400).json(error.details);
+    next();
+}
+
+function isValidCompte(request, response, next) {
+    const { body } = request;
+    const { error } = schemaUtilisateurJoi.validate(body, { abortEarly: false });
     if (error) return response.status(400).json(error.details);
     next();
 }
@@ -36,18 +45,42 @@ async function autorisation(request, response, next) {
 }
 
 function isAdmin(request, response, next) {
-    if(request.utilisateur.role !== "admin") return response(403).json({ message: "vous n'avez pas les droits pour effectuer cette action"})
+    // if(request.user.role !== "admin" || request.utilisateur.role == "undefined") return response(403).json({ message: "vous n'avez pas les droits pour effectuer cette action"})
+    console.log("isAdmin !!!!!!!!!");
     next();
 }
 
 function isRedacteur(request, response, next) {
-    if(request.utilisateur.role !== "redacteur" || request.utilisateur.role !== "admin") return response(403).json({ message: "vous n'avez pas les droits pour effectuer cette action"})
+    if(request.user.role !== "rédacteur" || request.utilisateur.role !== "admin") return response(403).json({ message: "vous n'avez pas les droits pour effectuer cette action"})
+    next();
+}
+
+async function passwordToSend(request, response, next) {
+    
+    const { body } = request;
+    console.log("BODY du compte à modifier: ", body);
+    const id = request.params.id;
+    console.log("ID du compte à modifier: ", id);
+    const getUtilisateur = await Utilisateur.findById(id);
+    console.log("getUtilisateur: ", getUtilisateur);
+    request.email = getUtilisateur.email;
+    if (body.password == "" || body.password == "undefined" || body.password == null) {
+        console.log("Le mot de passe est le même");
+        body.password = getUtilisateur.password;
+    } else {
+        console.log("Le mot de passe a été modifié");
+        const salt = await genSalt(10);
+        body.password = await hash(body.password, salt);
+    }
+    console.log("newPassword: ", body.password);
     next();
 }
 
 module.exports.idValid = idValid;
 module.exports.isValidOeuvre = isValidOeuvre;
+module.exports.isValidCompte = isValidCompte;
 module.exports.autorisation = autorisation;
 // module.exports.getToken = getToken;
 module.exports.isAdmin = isAdmin;
 module.exports.isRedacteur = isRedacteur;
+module.exports.passwordToSend = passwordToSend;

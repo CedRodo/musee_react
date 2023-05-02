@@ -15,7 +15,7 @@ route.post("/connexion", async (request, response) => {
 
     const getUtilisateur = await Utilisateur.findOne({ email: body.email });
 
-    if (!getUtilisateur) return response.status(404).json({ message: "Aucun profil avec cette email"});
+    if (!getUtilisateur) return response.status(404).json({ message: "Aucun profil avec cette adresse email"});
 
     const checkPass = await compare(body.password, getUtilisateur.password);
 
@@ -34,9 +34,9 @@ route.post("/connexion", async (request, response) => {
     let admin = false;
     let redacteur = false;
     if (getUtilisateur.role == "admin") admin = true;
-    if (getUtilisateur.role == "redacteur") redacteur = true;
+    if (getUtilisateur.role == "rédacteur") redacteur = true;
 
-    response.json({ message: "Bienvenue", token: token, isAdmin: admin, isRedacteur: redacteur });
+    response.json({ message: "Bienvenue", body: profilSansPass, token: token, isAdmin: admin, isRedacteur: redacteur });
 });
 
 module.exports = route;

@@ -1,80 +1,187 @@
-import { StyleSheet, Text, View, FlatList } from "react-native";
+import { StyleSheet, Text, View, FlatList, Button } from "react-native";
 import React, { useEffect, useState } from "react";
-import { TouchableHighlight } from "react-native-gesture-handler";
+import { TextInput, TouchableHighlight } from "react-native-gesture-handler";
+import SelectDropdown from 'react-native-select-dropdown';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
-const Admin = () => {
-  const [users, setUsers] = useState([]);
+const Admin = ({navigation}) => {
+
+    const [users, setUsers] = useState([]);
+    const [modifCompte, setModifCompte] = useState(false);
+    const [compteModifie, setCompteModifie] = useState(false);
+    const [idCompte, setIdCompte] = useState("");
+    const [emailCompte, setEmailCompte] = useState("");
+    const [passwordCompte, setPasswordCompte] = useState("");
+    const [roleCompte, setRoleCompte] = useState("");
+    const [utilisateur, setUtilisateur] = useState({});
+
+    const [messageErreur, setMessageErreur] = useState("");
 //   const [email, setEmail] = useState([]);
 //   const [password, setPassword] = useState([]);
 //   const [role, setRole] = useState([]);
 
   ///////////
 
-  async function affiche() {
-    await fetch("http://10.0.2.2:4004/admin/utilisateurs/")
-      .then((response) => response.json())
-      .then((data) => setUsers(data));
-  }
+    async function affiche() {
+        await fetch("http://10.0.2.2:4004/admin/utilisateurs/")
+        .then((response) => response.json())
+        .then((data) => setUsers(data));
+    }
 
-  useEffect(function () {
-    affiche();
-  }, []);
+    async function supprimerUtilisateur(id) {
+        console.log("supprimé");
 
-  ///////////
+        let response = await fetch("http://10.0.2.2:4004/admin/utilisateurs/" + id, {
+            method: "DELETE"
+        });
 
-  // async function supprimerUtilisateur(id) {
-  //         console.log("supprimé");
-  //       await fetch("http://192.168.1.98:4004/admin/utilisateurs/" + id, {
-  //       method: "DELETE"
-  //     });
+        let data = await response.json();
 
-  // }
+        setUtilisateur(data);
 
-  //////////
+        console.log(data, " a été supprimé");
+        affiche();
+    }
 
-  // let bodyContent = JSON.stringify({
-  //         "email" : email,
-  //         "password" : password,
-  //         "role" : role
-  //     });
-  //    async function modifierUtilisateur(id) {
-  //      let response = await fetch("http://192.168.1.98:4004/admin/utilisateurs/"+id, {
-  //           method: "PUT",
-  //           body: bodyContent
-  //    });
-  // }
+    async function modifierUtilisateur(id) {
+        console.log("modification de: " + id);
+        console.log("roleCompte: " + roleCompte);
+        
+        let lesHeaders = {
+        "Accept": "*/*",
+        "Content-Type": "application/json"
+        }
+        let lesChamps = JSON.stringify({
+        "email" : emailCompte,
+        "password" : passwordCompte,
+        "role" : roleCompte
+        });
 
-  /////////////
+        console.log(lesChamps);
+
+        let response = await fetch("http://10.0.2.2:4004/admin/utilisateurs/" + id, { 
+        method: "PUT",
+        body: lesChamps,
+        headers : lesHeaders
+        });
+
+        console.log("RESPONSE: ", response);
+
+        let data = await response.json();
+
+        console.log(data, " a été modifié");
+
+        setUtilisateur(data);
+        
+        if (data.body !== "undefined") { 
+            setCompteModifie(true);
+            setMessageErreur("");
+        }  else {
+            setMessageErreur(data.message);
+        }
+
+    }
+
+    async function compteAModifier(id, email, role) {
+        setModifCompte(true);
+        setCompteModifie(false);
+        console.log("modification");
+        setIdCompte(id);
+        setEmailCompte(email);
+        setRoleCompte(role); 
+    }
+
+    useEffect(function () {
+        affiche();
+        setMessageErreur("");
+    }, []);
+
+    useEffect(function () {
+        affiche();
+    }, [utilisateur]);
+
+    function deconnexion(){
+      setEstLoggue(false);
+      navigation.navigate("Accueil")
+    }
+
+    const roles = ["admin", "rédacteur", "utilisateur"];
 
   return (
     <View style={{ marginTop: 30 }}>
       <Text style={styles.titre}>Gestion des profils</Text>
-      <FlatList
-        data={users}
-        renderItem={({ item }) => (
-          <View style={styles.affichageView}>
-            {/* <View style={styles.affichageView}> */}
-              <View>
-                <Text style={styles.textCompte1}>ID : {item._id}</Text>
-                <Text style={styles.textCompte1}>email : {item.email}</Text>
-                <Text style={styles.textCompte1}>Rôle : {item.role}</Text>
-              </View>
-              <View>
-                <TouchableHighlight style={styles.touchable1}>
-                    {/* Fonction onPress à ajouter */}
-                  <Text style={styles.textTouchable2}>
-                    Supprimer ce compte utilisateur            
-                  </Text>
-                </TouchableHighlight>
-                <TouchableHighlight style={styles.touchable2}>
-                    {/* Fonction onPress à ajouter */}
-                  <Text style={styles.textTouchable}>Modifier ce compte utilisateur</Text>
-                </TouchableHighlight>
-              </View>
-            {/* </View> */}
-          </View>
-        )}
-      />
+        { modifCompte
+        ?
+        <View>
+            <TextInput placeholder="email" onChangeText={(texte) => setEmailCompte(texte)}  style={styles.input} value={emailCompte} />
+            <TextInput placeholder="password" onChangeText={(texte) => setPasswordCompte(texte)}  style={styles.input} secureTextEntry={true} /> 
+            <SelectDropdown
+                data={roles}
+                defaultValue={roleCompte}
+                onSelect={(selectedItem, index) => {
+                console.log(selectedItem, index);
+                setRoleCompte(selectedItem);
+                console.log(roleCompte);
+                }}
+                defaultButtonText={'Choisir le rôle'}
+                buttonTextAfterSelection={(selectedItem, index) => {
+                return selectedItem;
+                }}
+                rowTextForSelection={(item, index) => {
+                return item;
+                }}
+                buttonStyle={styles.dropdown1BtnStyle}
+                buttonTextStyle={styles.dropdown1BtnTxtStyle}
+                renderDropdownIcon={isOpened => {
+                return <FontAwesome name={isOpened ? 'chevron-up' : 'chevron-down'} color={'#444'} size={18} />;
+                }}
+                dropdownIconPosition={'right'}
+                dropdownStyle={styles.dropdown1DropdownStyle}
+                rowStyle={styles.dropdown1RowStyle}
+                rowTextStyle={styles.dropdown1RowTxtStyle}
+            />
+            { messageErreur !== "" &&
+            <Text style={styles.alertMessage}>{ messageErreur }</Text>
+            }
+                <TouchableHighlight style={ styles.touchable }>
+                <Text style={styles.btnCourt} onPress={() => { modifierUtilisateur(idCompte); }}>Valider</Text>
+            </TouchableHighlight>
+            {
+                compteModifie &&
+                <Text style={{ marginTop: 20, paddingHorizontal: 20 }}>L'utilisateur { JSON.stringify(utilisateur.oldEmail)} a bien été modifié</Text>
+            }
+            <TouchableHighlight style={ styles.retourGestionProfil }>
+                <Button title="Retour" onPress={() => { setModifCompte(false); }} />
+            </TouchableHighlight>
+        </View>
+        :
+        <FlatList
+            data={users}
+            renderItem={({ item }) => (
+            <View style={styles.affichageView}>
+                <View>
+                    <Text style={styles.textCompte1}>ID : {item._id}</Text>
+                    <Text style={styles.textCompte1}>email : {item.email}</Text>
+                    <Text style={styles.textCompte1}>Rôle : {item.role}</Text>
+                </View>
+                <View>
+                    <TouchableHighlight style={styles.touchable1}>
+                        {/* Fonction onPress à ajouter */}
+                    <Text style={styles.textTouchable2} onPress={()=>{supprimerUtilisateur(item._id)}}>
+                        Supprimer ce compte utilisateur            
+                    </Text>
+                    </TouchableHighlight>
+                    <TouchableHighlight style={styles.touchable2}>
+                        {/* Fonction onPress à ajouter */}
+                    <Text style={styles.textTouchable} onPress={()=>{compteAModifier(item._id, item.email, item.role)}}>Modifier ce compte utilisateur</Text>
+                    </TouchableHighlight>
+                </View>
+            </View>
+            )}
+            keyExtractor={(item, index) => item._id}
+        />
+        }
     </View>
   );
 };
@@ -86,12 +193,29 @@ const styles = StyleSheet.create({
     marginTop: 10, marginLeft: 15,
     alignItems: "center"
   },
+  refresh: {
+    marginTop: 30,
+    width: "30%",
+    marginLeft: "auto",
+    marginRight: "auto",
+    justifyContent: "center"
+  },
   titre: {
     fontSize: 22, textAlign: "center",
     padding: 20,
     borderWidth: 2,
     margin: 10
   },
+  touchable : {
+    backgroundColor: "lightblue",
+    width : 120,
+    height: 50,
+    borderRadius: 15,
+    alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "center",
+    marginTop: 30
+},
   touchable1: {
     width: 140,
     backgroundColor: "salmon",
@@ -115,6 +239,58 @@ const styles = StyleSheet.create({
   },
   textCompte1: { 
     fontSize: 16, textAlign: "right" 
+  },
+  input : {
+    backgroundColor : "white",
+    fontSize : 18,
+    padding : 7,
+    marginLeft : 20,
+    marginRight : 20,
+    marginTop : 20,
+    borderWidth : 1,
+    borderColor : "black"
+  },
+  retourGestionProfil: {
+    marginTop: 30,
+    width: "30%",
+    marginLeft: "auto",
+    marginRight: "auto"
+  },
+  btnCourt : {
+    fontSize: 18
+  },
+  dropdown1BtnStyle: {
+    width: '80%',
+    marginTop : 20,
+    marginLeft: "auto",
+    marginRight: "auto",
+    height: 50,
+    backgroundColor: '#FFF',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#444',
+  },
+  dropdown1BtnTxtStyle: {
+    color: '#444',
+    textAlign: 'left'
+  },
+  dropdown1DropdownStyle: {
+    backgroundColor: '#EFEFEF'
+  },
+  dropdown1RowStyle: {
+    backgroundColor: '#EFEFEF',
+    borderBottomColor: '#C5C5C5'
+  },
+  dropdown1RowTxtStyle: {
+    color: '#444',
+    textAlign: 'left'
+  },
+  alertMessage: {
+    marginHorizontal: 20,
+    paddingHorizontal: 10,
+    fontSize: 18,
+    color: "red",
+    backgroundColor: "pink"
   }
 });
 

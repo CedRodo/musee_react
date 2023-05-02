@@ -33,7 +33,7 @@ const Accueil = () => {
     setAccueilOeuvres(data);
     // console.log("AccueilOeuvres: ", accueilOeuvres);
 
-    console.log("Message d'accueil ", accueilOeuvres.message);
+    // console.log("Message d'accueil ", accueilOeuvres.message);
   }
 
   useEffect(function() {
@@ -55,8 +55,7 @@ const Accueil = () => {
   let images = [];
   useEffect(function() {
     if(Object.keys(accueilOeuvres).length > 0) {
-      console.log("AccueilOeuvres: ", accueilOeuvres);  
-    
+      // console.log("AccueilOeuvres: ", accueilOeuvres);     
       setOeuvre1Id(accueilOeuvres.body[0]._id);
       setOeuvre2Id(accueilOeuvres.body[1]._id);
       setOeuvre3Id(accueilOeuvres.body[2]._id);
