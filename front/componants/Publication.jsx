@@ -3,7 +3,9 @@ import React, { useEffect, useState } from "react";
 import { TextInput, TouchableHighlight } from "react-native-gesture-handler";
 import SelectDropdown from 'react-native-select-dropdown';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import * as SQLite from "expo-sqlite";
+
+const db = SQLite.openDatabase("demo.sqlite");
 
 const Publication = ({navigation}) => {
 
@@ -22,7 +24,10 @@ const Publication = ({navigation}) => {
     const [oeuvreTypeAModifier, setOeuvreTypeAModifier] = useState("");
     const [oeuvreDescriptionAModifier, setOeuvreDescriptionAModifier] = useState("");
 
-    
+    const [idUtilisateur, setIdUtilisateur] = useState("");
+    const [isAdmin, setIsAdmin] = useState("");
+    const [isRedacteur, setIsRedacteur] = useState("");
+    const [tokenUtilisateur, setTokenUtilisateur] = useState("");
 
     const [idOeuvre, setIdOeuvre] = useState("");
     const [oeuvre, setOeuvre] = useState({});
@@ -35,10 +40,43 @@ const Publication = ({navigation}) => {
   ///////////
 
     async function affiche() {
-        await fetch("http://10.0.2.2:4004/publications/")
-        .then((response) => response.json())
-        .then((data) => setOeuvres(data));
-    }
+    
+      db.transaction(function(tx) {
+            tx.executeSql(`SELECT * FROM user`,
+                        [],
+                        function(transact, resultat) { console.log("SELECT getIdUtilisateur réussi: ", resultat.rows._array[0].idUtilisateur); setIdUtilisateur(resultat.rows._array[0].idUtilisateur);  setIdUtilisateur(resultat.rows._array[0].idUtilisateur); setIsAdmin(resultat.rows._array[0].isAdmin); setIsRedacteur(resultat.rows._array[0].isRedacteur); setTokenUtilisateur(resultat.rows._array[0].token)},
+                        function(transact, err) { console.log("SELECT échec", err); })
+            });     
+
+      console.log("idUtilisateur: ", idUtilisateur);
+      console.log("isAdmin: ", isAdmin);
+      console.log("isRedacteur: ", isRedacteur);
+      console.log("tokenUtilisateur: ", tokenUtilisateur);  
+        
+        let headers = {
+          "Accept": "*/*",
+          "Content-Type": "application/json",
+          "token": tokenUtilisateur
+        }
+
+        let response = await fetch("http://10.0.2.2:4004/publications/", { 
+          method: "GET",
+          headers : headers
+        });
+
+        console.log("RESPONSE: ", response);
+
+        let data = await response.json(); 
+
+        console.log("DATA: ", data);
+
+        if (data.message == "undefined") {
+          setMessageErreur(data.message);
+        } else {
+          setOeuvres(data);
+        }
+
+      }        
 
     async function supprimerOeuvre(id) {
         console.log("supprimé");
@@ -55,7 +93,7 @@ const Publication = ({navigation}) => {
         affiche();
     }
 
-    async function publierOeuvre() {
+    async function publierOeuvre() { 
         
         let lesHeaders = {
         "Accept": "*/*",
@@ -69,15 +107,16 @@ const Publication = ({navigation}) => {
           "description" : oeuvreDescriptionAModifier,
           "date_oeuvre" : oeuvreDateCreationAModifier,
           "date_publication" : new Date(),
-          "idRedacteur": "644c43816e9df392ca3ede3d"
+          "idRedacteur": idUtilisateur,
+          // "idRedacteur": "644c43816e9df392ca3ede3d"
         });
 
         console.log("lesChamps: ", lesChamps);
 
         let response = await fetch("http://10.0.2.2:4004/publications/", { 
-        method: "POST",
-        body: lesChamps,
-        headers : lesHeaders
+          method: "POST",
+          body: lesChamps,
+          headers : lesHeaders
         });
 
         console.log("RESPONSE: ", response);
@@ -111,7 +150,8 @@ const Publication = ({navigation}) => {
           "type" : oeuvreTypeAModifier,
           "imageUrl" : oeuvreImageUrlAModifier,
           "date_oeuvre" : oeuvreDateCreationAModifier,
-          "date_modification" : oeuvreDateCreationAModifier
+          "date_modification" : oeuvreDateCreationAModifier,
+          "idUtilisateur" : idUtilisateur
         });
 
         console.log(lesChamps);
@@ -135,6 +175,7 @@ const Publication = ({navigation}) => {
           setMessageErreur("");
           navigation.navigate("Publication");
         }  else {
+          setOeuvre(data);
           setMessageErreur(data.message);
         }
 
@@ -186,19 +227,23 @@ const Publication = ({navigation}) => {
         affiche();
     }, [oeuvre]);
 
-    // function deconnexion(){
-    //   setEstLoggue(false);
-    //   navigation.navigate("Accueil")
-    // }
+    useEffect(function () {
+        affiche();
+        setMessageErreur("");
+    }, []);
 
-    const types = ["peinture", "sculpture"];
+    useEffect(function () {
+        affiche();
+        setMessageErreur("");
+    }, []);
+
+    const types = ["peinture", "sculpture", "photographie", "art décoratif"];
 
   return (
     <View style={{ marginTop: 30, paddingBottom: 200 }}>
+      { show &&
+      <>
       <Text style={styles.titre}>Publication d'articles</Text>
-        { show
-        ?
-        <>
         <TouchableHighlight style={styles.newArticle}>
           <Button title="Publier un article" onPress={()=>{ setShow(false); setModifOeuvre(false); setOeuvre(""); }} />
         </TouchableHighlight>
@@ -224,7 +269,8 @@ const Publication = ({navigation}) => {
             keyExtractor={(item, index) => item._id}
         />        
         </>
-        :
+        }
+        { !show && 
         <ScrollView>
             { modifOeuvre ? <Text style={styles.titre2}>Modification</Text> : <Text style={styles.titre2}>Nouvel article</Text> }
             { oeuvreDatePublicationAModifier !== 0 && <>

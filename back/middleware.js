@@ -27,7 +27,7 @@ function isValidCompte(request, response, next) {
 async function autorisation(request, response, next) {   
     // const token = request.header("x-token");
 
-    const token = request.cookies['token'];
+    const token = request.headers.token;
     console.log("token: ", token);
     
     if (!token) return response.status(401).json({ message: "Vous devez avoir un token JWT pour réaliser cette opération"});    
@@ -36,7 +36,7 @@ async function autorisation(request, response, next) {
         const payload = JWT.verify(token, process.env.JWT_SECRET);
         console.log("PAYLOAD: ", payload);
         request.user = payload;
-        console.log("USER: ", request.utilisateur);
+        console.log("USER: ", request.user);
         next();
     }
     catch {
@@ -45,13 +45,13 @@ async function autorisation(request, response, next) {
 }
 
 function isAdmin(request, response, next) {
-    // if(request.user.role !== "admin" || request.utilisateur.role == "undefined") return response(403).json({ message: "vous n'avez pas les droits pour effectuer cette action"})
+    // if(request.user.role !== "admin") return response(403).json({ message: "vous n'avez pas les droits pour effectuer cette action"})
     console.log("isAdmin !!!!!!!!!");
     next();
 }
 
 function isRedacteur(request, response, next) {
-    if(request.user.role !== "rédacteur" || request.utilisateur.role !== "admin") return response(403).json({ message: "vous n'avez pas les droits pour effectuer cette action"})
+    if(request.user.role !== "rédacteur" || request.user.role !== "admin") return response(403).json({ message: "vous n'avez pas les droits pour effectuer cette action"})
     next();
 }
 

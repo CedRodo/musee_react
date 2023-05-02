@@ -2,7 +2,6 @@ import { Button, StyleSheet, Text, TextInput, Touchable, View, TouchableWithoutF
 import React, { useContext, useEffect, useState } from 'react'
 import * as SQLite from "expo-sqlite";
 
-
 const db = SQLite.openDatabase("demo.sqlite");
 
 const Login = ({navigation}) => {

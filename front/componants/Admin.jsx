@@ -14,11 +14,7 @@ const Admin = ({navigation}) => {
     const [passwordCompte, setPasswordCompte] = useState("");
     const [roleCompte, setRoleCompte] = useState("");
     const [utilisateur, setUtilisateur] = useState({});
-
     const [messageErreur, setMessageErreur] = useState("");
-//   const [email, setEmail] = useState([]);
-//   const [password, setPassword] = useState([]);
-//   const [role, setRole] = useState([]);
 
   ///////////
 

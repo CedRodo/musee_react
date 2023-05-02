@@ -1,5 +1,6 @@
 const { Router } = require("express");
 const { Oeuvre } = require("./models");
+const { autorisation, isRedacteur, passwordToSend, isValidCompte } = require("./middleware");
 
 const route = Router();
 
