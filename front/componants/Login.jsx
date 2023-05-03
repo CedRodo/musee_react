@@ -1,14 +1,16 @@
 import { Button, StyleSheet, Text, TextInput, Touchable, View, TouchableWithoutFeedback, TouchableHighlight, ImageBackground } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
 import * as SQLite from "expo-sqlite";
+import { useDispatch, useSelector } from "react-redux";
 
 const db = SQLite.openDatabase("demo.sqlite");
 
 const Login = ({navigation}) => {
+  const dispatch = useDispatch();
+  const mode = useSelector((store) => store.reducerLoggue);
 
   const [email , setEmail] = useState("")
   const [password , setPassword] = useState("")
-  const [estLoggue, setEstLoggue] = useState(false)
   const [modeCompte, setModeCompte] = useState("inscription")
   const [show, setShow] = useState(true)
   const [roleAdmin, setRoleAdmin] = useState(false)
@@ -66,9 +68,9 @@ const Login = ({navigation}) => {
         "Content-Type": "application/json"
        }
       let lesChamps = JSON.stringify({
-        "email" : email,  // <== Il devrait me renvoyer "déjà créé"
+        "email" : email,  
         "password" : password,
-        "role" : "admin"  // pour le test
+        "role" : "admin"  //<=== ?
       });
 
       let response = await fetch("http://10.0.2.2:4004/compte", { 
@@ -83,9 +85,9 @@ const Login = ({navigation}) => {
       console.log("INSCRIPTION: ", data);
 
       if (data.length > 0) {
-        setEstLoggue(false) 
+        dispatch({type: "NONLOGGUE"});
       } else {
-        setEstLoggue(true);
+        dispatch({type: "LOGGUE"});
         setUtilisateur(data);
         setIdUtilisateurConnecte(data.body._id);
         setEmailUtilisateurConnecte(data.body.email);
@@ -93,7 +95,8 @@ const Login = ({navigation}) => {
         setEmailCompteModification(data.body.email);
         setRoleAdmin(utilisateur.isAdmin);
         setRoleRedacteur(utilisateur.isRedacteur);
-        setEstLoggue(true);
+        dispatch({type: "LOGGUE"});
+        //setEstLoggue(true);   <== Il y était deux fois
 
         db.transaction(function(tx) {
             tx.executeSql(`DELETE FROM user`,
@@ -133,7 +136,7 @@ const Login = ({navigation}) => {
       console.log(data);
       
       if (data.length > 0) {
-        return setEstLoggue(false);
+        return dispatch({ type: "NONLOGGUE" });
       } else if (data.message !== "Bienvenue") {
         return setMessageErreur(data.message);
       } else {
@@ -145,7 +148,7 @@ const Login = ({navigation}) => {
         setEmailCompteModification(data.body.email);
         setRoleAdmin(utilisateur.isAdmin);
         setRoleRedacteur(utilisateur.isRedacteur);
-        setEstLoggue(true);
+        dispatch({type: "LOGGUE"});
 
         db.transaction(function(tx) {
             tx.executeSql(`DELETE FROM user`,
@@ -226,7 +229,7 @@ const Login = ({navigation}) => {
     }
 
     function deconnexion(){
-      setEstLoggue(false)
+      dispatch({type: "NONLOGGUE"})
       setModeCompte("")
       setShow(true)
       setPassword("")
@@ -239,7 +242,7 @@ const Login = ({navigation}) => {
     return (
       <ImageBackground source={{uri : "https://i.imgur.com/CmoGAWk.jpeg"}} style={{width: '100%', height: '100%'}}>
 <View style={{paddingTop : 40}}> 
-  { estLoggue == false
+  { mode.statusLoggue == false
     ?
       show
         ? 
