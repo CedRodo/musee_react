@@ -26,7 +26,7 @@ route.post("/", async function(request, response) {
 
     const newUtilisateur = new Utilisateur( { ...body, role: "utilisateur", password: passwordHash });
     await newUtilisateur.save();
-    response.json({ message: "Le compte a été créé.", body: body});
+    response.json({ message: "Le compte a été créé", body: body});
 
 });
 

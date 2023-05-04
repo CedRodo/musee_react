@@ -96,15 +96,10 @@ const Admin = ({navigation}) => {
         affiche();
     }, [utilisateur]);
 
-    function deconnexion(){
-      dispatch({type: "NONLOGGUE"});
-      navigation.navigate("Accueil")
-    }
-
     const roles = ["admin", "rédacteur", "utilisateur"];
 
   return (
-    <View style={{ marginTop: 30 }}>
+    <View style={{ marginTop: 30, marginBottom: 100 }}>
       <Text style={styles.titre}>Gestion des profils</Text>
         { modifCompte
         ?
@@ -160,15 +155,13 @@ const Admin = ({navigation}) => {
                     <Text style={styles.textCompte1}>email : {item.email}</Text>
                     <Text style={styles.textCompte1}>Rôle : {item.role}</Text>
                 </View>
-                <View>
+                <View style={styles.buttonsModifDelete}>
                     <TouchableHighlight style={styles.touchable1}>
-                        {/* Fonction onPress à ajouter */}
                     <Text style={styles.textTouchable2} onPress={()=>{supprimerUtilisateur(item._id)}}>
                         Supprimer ce compte utilisateur            
                     </Text>
                     </TouchableHighlight>
                     <TouchableHighlight style={styles.touchable2}>
-                        {/* Fonction onPress à ajouter */}
                     <Text style={styles.textTouchable} onPress={()=>{compteAModifier(item._id, item.email, item.role)}}>Modifier ce compte utilisateur</Text>
                     </TouchableHighlight>
                 </View>
@@ -184,9 +177,17 @@ export default Admin;
 
 const styles = StyleSheet.create({
   affichageView: {
-    flex: 1, flexDirection: "row", 
-    marginTop: 10, marginLeft: 15,
+    flex: 1,
+    flexDirection: "column", 
+    marginTop: 15,
+    marginBottom: 15,
+    marginLeft: 15,
     alignItems: "center"
+  },
+  buttonsModifDelete: {
+    flex: 1,
+    flexDirection: "row", 
+    marginTop: 10,
   },
   refresh: {
     marginTop: 30,

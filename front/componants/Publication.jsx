@@ -13,7 +13,6 @@ const Publication = ({navigation}) => {
     const [modifOeuvre, setModifOeuvre] = useState(false);
     const [oeuvreModifie, setOeuvreModifiee] = useState(false);
     const [show, setShow] = useState(true);
-    const [retour, setRetour] = useState(false);
 
     const [oeuvreTitreAModifier, setOeuvreTitreAModifier] = useState("");
     const [oeuvreAuteurAModifier, setOeuvreAuteurAModifier] = useState("");
@@ -33,9 +32,6 @@ const Publication = ({navigation}) => {
     const [oeuvre, setOeuvre] = useState({});
 
     const [messageErreur, setMessageErreur] = useState("");
-//   const [email, setEmail] = useState([]);
-//   const [password, setPassword] = useState([]);
-//   const [role, setRole] = useState([]);
 
   ///////////
 
@@ -108,7 +104,6 @@ const Publication = ({navigation}) => {
           "date_oeuvre" : oeuvreDateCreationAModifier,
           "date_publication" : new Date(),
           "idRedacteur": idUtilisateur,
-          // "idRedacteur": "644c43816e9df392ca3ede3d"
         });
 
         console.log("lesChamps: ", lesChamps);
@@ -196,18 +191,6 @@ const Publication = ({navigation}) => {
         setOeuvreDatePublicationAModifier(datePublication); 
         if (dateModification !== null) setOeuvreDateModificationAModifier(dateModification); 
     }
-
-    // function clear() {
-        
-    //     setIdOeuvre("");
-    //     setOeuvreTitreAModifier("");
-    //     setOeuvreAuteurAModifier(""); 
-    //     setOeuvreTypeAModifier(""); 
-    //     setOeuvreImageUrlAModifier(""); 
-    //     setOeuvreDescriptionAModifier(""); 
-    //     setOeuvreDateCreationAModifier(""); 
-
-    // }
 
     useEffect(function () {
         affiche();

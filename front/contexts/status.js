@@ -1,33 +1,37 @@
 import { configureStore } from "@reduxjs/toolkit";
 
-// const mode = {statusAdmin : false}
-// function reducerAdmin(state = mode, action){
-//     switch(action.type){
-//         case "ADMINYES" :
-//             return{...state, statusAdmin : true}
-//         case "ADMINNO" :
-//             return{...state, statusAdmin : false}
-//         default :
-//             return state;
-//     }
-// }
+const profil = { statusLoggue : false, isAdmin : false, isRedacteur : false }
 
-// const reducer = {reducerAdmin : reducerAdmin}
-
-const mode = { statusLoggue : false }
-
-function reducerLoggue(state = mode, action){
+function reducerLoggue(state = profil, action){
     switch(action.type){
         case "LOGGUE" :
-            return { ...state, statusLoggue : true }
+            return { ...state, statusLoggue: true }
         case "NONLOGGUE" :
-            return { ...state, statusLoggue : false }
+            return { ...state, statusLoggue: false }
         default :
             return state;
     }
 }
 
-const reducer = { reducerLoggue : reducerLoggue }
+function reducerIsRole(state = profil, action){
+    switch(action.type){
+        case "isAdminTrue" :
+            return { ...state, isAdmin: true }
+        case "isAdminFalse" :
+            return { ...state, isAdmin: false }
+        case "isRedacteurTrue" :
+            return { ...state, isRedacteur: true }
+        case "isRedacteurFalse" :
+            return { ...state, isRedacteur: false }
+        default :
+            return state;
+    }
+}
+
+const reducer = {
+    reducerLoggue: reducerLoggue,
+    reducerIsRole: reducerIsRole
+}
 
 
 export const store = configureStore({ reducer });

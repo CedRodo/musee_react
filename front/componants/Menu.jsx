@@ -24,7 +24,8 @@ const Onglet = createMaterialBottomTabNavigator();
 
 const Menu = () => {
 
-    const mode = useSelector((store) => store.reducerLoggue);
+  const isLogged = useSelector((store) => store.reducerLoggue);
+  const isRole = useSelector((store) => store.reducerIsRole);
 
     return (
         <View style={styles.container}>
@@ -50,22 +51,19 @@ const Menu = () => {
                             return <MaterialCommunityIcons name="head" size={24} color="red" />
                         }
                     }}/>
-                {(mode.statusLoggue == true)
-                ?
-                <>
+                { isRole.isAdmin &&
                 <Onglet.Screen name="Admin" component={ Admin }  options={{
                     tabBarIcon : () => {
                             return <MaterialCommunityIcons name="key" size={24} color="brown"/>
-                        },
+                        }
                     }}/>
+                }
+                { (isRole.isAdmin || isRole.isRedacteur) &&
                 <Onglet.Screen name="Publication" component={ Publication }  options={{
                     tabBarIcon : () => {
                             return <MaterialCommunityIcons name="book" size={24} color="orange"/>
-                        },
+                        }
                     }}/>
-                </>
-                :
-                    <></>
                 }
             </Onglet.Navigator>
  

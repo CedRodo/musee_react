@@ -1,20 +1,21 @@
-import { Button, StyleSheet, Text, TextInput, Touchable, View, TouchableWithoutFeedback, TouchableHighlight, ImageBackground } from 'react-native'
-import React, { useContext, useEffect, useState } from 'react'
+import { Button, StyleSheet, Text, TextInput, View, TouchableHighlight, ImageBackground } from 'react-native'
+import React, { useEffect, useState } from 'react'
 import * as SQLite from "expo-sqlite";
+import prompt from "@powerdesigninc/react-native-prompt";
 import { useDispatch, useSelector } from "react-redux";
 
 const db = SQLite.openDatabase("demo.sqlite");
 
 const Login = ({navigation}) => {
   const dispatch = useDispatch();
-  const mode = useSelector((store) => store.reducerLoggue);
+  const isLogged = useSelector((store) => store.reducerLoggue);
+  const isRole = useSelector((store) => store.reducerIsRole);
 
   const [email , setEmail] = useState("")
   const [password , setPassword] = useState("")
   const [modeCompte, setModeCompte] = useState("inscription")
   const [show, setShow] = useState(true)
-  const [roleAdmin, setRoleAdmin] = useState(false)
-  const [roleRedacteur, setRoleRedacteur] = useState(false);
+  const [showDelete, setShowDelete] = useState(false)
   const [tokenUtilisateur, setTokenUtilisateur] = useState("");
 
   const [emailCompteModification, setEmailCompteModification] = useState("");
@@ -23,8 +24,6 @@ const Login = ({navigation}) => {
   const [idUtilisateurConnecte, setIdUtilisateurConnecte] = useState("");
   const [emailUtilisateurConnecte, setEmailUtilisateurConnecte] = useState("");
   const [roleUtilisateurConnecte, setRoleUtilisateurConnecte] = useState("");
-
-  const [utilisateur, setUtilisateur] = useState({});
 
   const [messageErreur, setMessageErreur] = useState("");
 
@@ -78,23 +77,30 @@ const Login = ({navigation}) => {
         body: lesChamps  ,
         headers : lesHeaders
       });
-      
-      setShow(true);
 
       let data = await response.json();
       console.log("INSCRIPTION: ", data);
 
+      setMessageErreur("");
+      setIdUtilisateurConnecte("");
+      setEmailUtilisateurConnecte("");
+      setRoleUtilisateurConnecte("");
+      setEmailCompteModification("");
+
       if (data.length > 0) {
         dispatch({type: "NONLOGGUE"});
-      } else {
+      } else if (data.message !== "Le compte a été créé") {
+        return setMessageErreur(data.message);
+      } else {      
+        setShow(true);
+        setShowDelete(false);
         dispatch({type: "LOGGUE"});
-        setUtilisateur(data);
+        dispatch({type: "isAdminFalse"});
+        dispatch({type: "isRedacteurFalse"});
         setIdUtilisateurConnecte(data.body._id);
         setEmailUtilisateurConnecte(data.body.email);
         setRoleUtilisateurConnecte(data.body.role);
         setEmailCompteModification(data.body.email);
-        setRoleAdmin(utilisateur.isAdmin);
-        setRoleRedacteur(utilisateur.isRedacteur);
 
         db.transaction(function(tx) {
             tx.executeSql(`DELETE FROM user`,
@@ -105,7 +111,7 @@ const Login = ({navigation}) => {
 
         db.transaction(function(tx) {
             tx.executeSql(`INSERT into user VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                        [null, data.body._id, data.body.email, data.body.role, roleAdmin, roleRedacteur, data.token],
+                        [null, data.body._id, data.body.email, data.body.role, false, false, data.token],
                         function(transact, resultat) { console.log(db); console.log("INSERT réussi");},
                         function(transact, err) { console.log("INSERT échec", err); })
             })
@@ -139,16 +145,18 @@ const Login = ({navigation}) => {
         return setMessageErreur(data.message);
       } else {
         setMessageErreur("");
-        setUtilisateur(data);
+        setShowDelete(false);
         setIdUtilisateurConnecte(data.body._id);
         setEmailUtilisateurConnecte(data.body.email);
         setRoleUtilisateurConnecte(data.body.role);
         setEmailCompteModification(data.body.email);
-        setRoleAdmin(data.isAdmin);
-        setRoleRedacteur(data.isRedacteur);
+        console.log("DATA isRedacteur", data.isRedacteur);
+        console.log("DATA isAdmin", data.isAdmin);
+        data.isAdmin ? dispatch({type: "isAdminTrue"}) : dispatch({type: "isAdminFalse"})
+        data.isRedacteur ? dispatch({type: "isRedacteurTrue"}) : dispatch({type: "isRedacteurFalse"})
         dispatch({type: "LOGGUE"});
-        console.log(roleAdmin);
-        console.log(roleRedacteur);
+        console.log("isRole isAdmin", isRole.isAdmin);
+        console.log("isRole isRedacteur", isRole.isRedacteur);
 
         db.transaction(function(tx) {
             tx.executeSql(`DELETE FROM user`,
@@ -159,7 +167,7 @@ const Login = ({navigation}) => {
 
         db.transaction(function(tx) {
             tx.executeSql(`INSERT into user VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                        [null, data.body._id, data.body.email, data.body.role, roleAdmin, roleRedacteur, data.token],
+                        [null, data.body._id, data.body.email, data.body.role, data.isAdmin, data.isRedacteur, data.token],
                         function(transact, resultat) { console.log(db); console.log("INSERT réussi");},
                         function(transact, err) { console.log("INSERT échec", err); })
             })
@@ -211,9 +219,6 @@ const Login = ({navigation}) => {
 
         if (data.id !== "undefined") {
 
-          getToken();
-          console.log("tokenUtilisateur: ", tokenUtilisateur);
-
           db.transaction(function(tx) {
               tx.executeSql(`UPDATE user SET email = ?, token = ? WHERE idUtilisateur = ?`,
                           [data.body.email, tokenUtilisateur, idUtilisateurConnecte],
@@ -222,27 +227,27 @@ const Login = ({navigation}) => {
               })
           setEmailUtilisateurConnecte(emailCompteModification);
           setModeCompte("");
+          setShowDelete(false);
         } 
-
-        setUtilisateur(data);
 
     }
 
     function deconnexion(){
-      dispatch({type: "NONLOGGUE"})
-      setModeCompte("")
-      setShow(true)
-      setPassword("")
-      setRoleAdmin(false)
-      setRoleRedacteur(false)
-      navigation.navigate("Accueil")
+      dispatch({type: "NONLOGGUE"});
+      setModeCompte("");
+      setShow(true);
+      setShowDelete(false);
+      setPassword("");
+      dispatch({type: "isAdminFalse"});
+      dispatch({type: "isRedacteurFalse"});
+      navigation.navigate("Accueil");
     }
 
 
     return (
       <ImageBackground source={{uri : "https://i.imgur.com/CmoGAWk.jpeg"}} style={{width: '100%', height: '100%'}}>
 <View style={{paddingTop : 40}}> 
-  { mode.statusLoggue == false
+  { isLogged.statusLoggue == false
     ?
       show
         ? 
@@ -268,6 +273,9 @@ const Login = ({navigation}) => {
             <Text style={styles.titre}>Inscription</Text>
             <TextInput placeholder="email" onChangeText={(duTexte) => setEmail(duTexte)}  style={styles.input}  />
             <TextInput placeholder="password" onChangeText={(duTexte) => setPassword(duTexte)}  style={styles.input}secureTextEntry={true} />
+            { messageErreur !== "" &&
+            <Text style={styles.alertMessage}>{ messageErreur }</Text>
+            }
             <TouchableHighlight onPress={enreg} style={ styles.touchable }>
               <Text style={styles.btnCourt}>Valider</Text>
             </TouchableHighlight>
@@ -301,6 +309,7 @@ const Login = ({navigation}) => {
     ?
     <View>
       <Text style={styles.titre}>Modification</Text>
+      <Text style={styles.oldEmail}>{emailUtilisateurConnecte}</Text>
       <TextInput placeholder="email" onChangeText={(texte) => setEmailCompteModification(texte)}  style={styles.input} value={emailCompteModification}  />
       <TextInput placeholder="password" onChangeText={(texte) => setPasswordCompteModification(texte)}  style={styles.input} secureTextEntry={true} />
       <TouchableHighlight onPress={() => {modifierUtilisateur(idUtilisateurConnecte); }} style={ styles.touchable }>
@@ -317,13 +326,18 @@ const Login = ({navigation}) => {
          <Text style={styles.btnCourt}>Se déconnecter</Text>
       </TouchableHighlight>
       <TouchableHighlight style={ styles.touchable2 }>
-          <Text style={{fontSize: 18, textAlign : "center"}} onPress={()=>{ supprimerUtilisateur(idUtilisateurConnecte)} }>Supprimer mon compte</Text>
+          <Text style={{fontSize: 18, textAlign : "center"}} onPress={()=>{ setShowDelete(true); }}>Supprimer mon compte</Text>
       </TouchableHighlight>
+      { showDelete &&
+      <TouchableHighlight style={ styles.refresh }>
+          <Button style={{fontSize: 18 }} onPress={()=>{ supprimerUtilisateur(idUtilisateurConnecte); }} title="Confirmer la suppression de votre compte ?" />
+      </TouchableHighlight>
+      }
       <TouchableHighlight style={ styles.touchable2 }>
           <Text style={{fontSize: 18, textAlign : "center"}} onPress={()=>{ 
-        setModeCompte("modification");} }>Modifier mon compte</Text>
+        setModeCompte("modification"); } }>Modifier mon compte</Text>
       </TouchableHighlight>
-      { roleAdmin &&
+      { isRole.isAdmin &&
       <View>
         <TouchableHighlight style={ styles.touchable2} onPress={() => {navigation.navigate("Admin")}}>
         <Text style={styles.btnCourt}>Gestion des profils</Text>
@@ -333,7 +347,7 @@ const Login = ({navigation}) => {
         </TouchableHighlight>
       </View>
       }
-      { roleRedacteur &&
+      { isRole.isRedacteur &&
       <View>
       <TouchableHighlight style={ styles.touchable2 }>
         <Text style={styles.btnCourt}>Publication</Text>
@@ -372,7 +386,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignSelf: "center",
     marginTop: 30
-},
+  },
+  refresh: {
+    marginTop: 30,
+    width: "60%",
+    marginLeft: "auto",
+    marginRight: "auto",
+    justifyContent: "center"
+  },
   touchable2 : {
     backgroundColor: "lightblue",
     width : 170,
@@ -392,6 +413,15 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "red",
     backgroundColor: "pink"
+  },
+  oldEmail: {
+    marginTop: 20,
+    marginHorizontal: 20,
+    paddingHorizontal: 10,
+    textAlign: "center",
+    fontSize: 18,
+    color: "blue",
+    backgroundColor: "beige"
   }
   
 })
