@@ -95,8 +95,6 @@ const Login = ({navigation}) => {
         setEmailCompteModification(data.body.email);
         setRoleAdmin(utilisateur.isAdmin);
         setRoleRedacteur(utilisateur.isRedacteur);
-        dispatch({type: "LOGGUE"});
-        //setEstLoggue(true);   <== Il y était deux fois
 
         db.transaction(function(tx) {
             tx.executeSql(`DELETE FROM user`,
@@ -146,9 +144,11 @@ const Login = ({navigation}) => {
         setEmailUtilisateurConnecte(data.body.email);
         setRoleUtilisateurConnecte(data.body.role);
         setEmailCompteModification(data.body.email);
-        setRoleAdmin(utilisateur.isAdmin);
-        setRoleRedacteur(utilisateur.isRedacteur);
+        setRoleAdmin(data.isAdmin);
+        setRoleRedacteur(data.isRedacteur);
         dispatch({type: "LOGGUE"});
+        console.log(roleAdmin);
+        console.log(roleRedacteur);
 
         db.transaction(function(tx) {
             tx.executeSql(`DELETE FROM user`,

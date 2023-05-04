@@ -97,7 +97,7 @@ const Admin = ({navigation}) => {
     }, [utilisateur]);
 
     function deconnexion(){
-      setEstLoggue(false);
+      dispatch({type: "NONLOGGUE"});
       navigation.navigate("Accueil")
     }
 
