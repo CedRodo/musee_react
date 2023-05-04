@@ -13,6 +13,7 @@ const Publication = ({navigation}) => {
     const [modifOeuvre, setModifOeuvre] = useState(false);
     const [oeuvreModifie, setOeuvreModifiee] = useState(false);
     const [show, setShow] = useState(true);
+    const [showDelete, setShowDelete] = useState(false);
 
     const [oeuvreTitreAModifier, setOeuvreTitreAModifier] = useState("");
     const [oeuvreAuteurAModifier, setOeuvreAuteurAModifier] = useState("");
@@ -60,11 +61,11 @@ const Publication = ({navigation}) => {
           headers : headers
         });
 
-        console.log("RESPONSE: ", response);
+        // console.log("RESPONSE: ", response);
 
         let data = await response.json(); 
 
-        console.log("DATA: ", data);
+        // console.log("DATA: ", data);
 
         if (data.message == "undefined") {
           setMessageErreur(data.message);
@@ -75,13 +76,14 @@ const Publication = ({navigation}) => {
       }        
 
     async function supprimerOeuvre(id) {
-        console.log("supprimé");
 
         let response = await fetch("http://10.0.2.2:4004/publications/" + id, {
             method: "DELETE"
         });
 
         let data = await response.json();
+
+        setShowDelete(false);
 
         setOeuvre(data);
 
@@ -106,7 +108,7 @@ const Publication = ({navigation}) => {
           "idRedacteur": idUtilisateur,
         });
 
-        console.log("lesChamps: ", lesChamps);
+        // console.log("lesChamps: ", lesChamps);
 
         let response = await fetch("http://10.0.2.2:4004/publications/", { 
           method: "POST",
@@ -114,7 +116,7 @@ const Publication = ({navigation}) => {
           headers : lesHeaders
         });
 
-        console.log("RESPONSE: ", response);
+        // console.log("RESPONSE: ", response);
 
         let data = await response.json();
 
@@ -130,7 +132,7 @@ const Publication = ({navigation}) => {
     }
 
     async function modifierOeuvre(id) {
-        console.log("modification de: " + id);
+        // console.log("modification de: " + id);
         
         let lesHeaders = {
         "Accept": "*/*",
@@ -149,7 +151,7 @@ const Publication = ({navigation}) => {
           "idUtilisateur" : idUtilisateur
         });
 
-        console.log(lesChamps);
+        // console.log(lesChamps);
 
         let response = await fetch("http://10.0.2.2:4004/publications/" + id, { 
         method: "PUT",
@@ -157,7 +159,7 @@ const Publication = ({navigation}) => {
         headers : lesHeaders
         });
 
-        console.log("RESPONSE: ", response);
+        // console.log("RESPONSE: ", response);
 
         let data = await response.json();
 
@@ -176,10 +178,10 @@ const Publication = ({navigation}) => {
 
     }
 
-    async function oeuvreAModifier(id, titre, auteur, type, imageUrl, description, dateOeuvre, datePublication, dateModification) {
-        console.log("modification");
+    function oeuvreAModifier(id, titre, auteur, type, imageUrl, description, dateOeuvre, datePublication, dateModification) {
         setModifOeuvre(true);
         setShow(false);
+        setShowDelete(false);
         setOeuvreModifiee(false);
         setIdOeuvre(id);
         setOeuvreTitreAModifier(titre);
@@ -190,6 +192,11 @@ const Publication = ({navigation}) => {
         setOeuvreDateCreationAModifier(dateOeuvre); 
         setOeuvreDatePublicationAModifier(datePublication); 
         if (dateModification !== null) setOeuvreDateModificationAModifier(dateModification); 
+    }
+
+    function alerteSuppression(id) {
+      setShowDelete(true);
+      setIdOeuvre(id)
     }
 
     useEffect(function () {
@@ -241,12 +248,19 @@ const Publication = ({navigation}) => {
                 </View>
                 <View style={styles.buttonsModifDelete}>
                     <TouchableHighlight style={styles.touchable1}>
-                      <Text style={styles.textTouchable2} onPress={()=>{supprimerOeuvre(item._id)}}>Supprimer</Text>
+                      <Text style={styles.textTouchable2} onPress={()=>{alerteSuppression(item._id)}}>Supprimer</Text>
                     </TouchableHighlight>
                     <TouchableHighlight style={styles.touchable2}>
                       <Text style={styles.textTouchable} onPress={()=>{oeuvreAModifier(item._id, item.titre, item.auteur, item.type, item.imageUrl, item.description, item.date_oeuvre, item.date_publication, item.date_modification, item.date_publication)}}>Modifier</Text>
                     </TouchableHighlight>
                 </View>
+                { (item._id === idOeuvre) && showDelete &&
+                <View style={{ width: "100%" }}>
+                  <TouchableHighlight style={ styles.alertDelete }>
+                      <Button style={{fontSize: 18 }} onPress={()=>{supprimerOeuvre(item._id)}} title="Confirmer la suppression ?" />
+                  </TouchableHighlight>
+                </View>
+                }
             </View>
             )}
             keyExtractor={(item, index) => item._id}
@@ -272,9 +286,7 @@ const Publication = ({navigation}) => {
                 data={types}
                 // defaultValue={types[0]}
                 onSelect={(selectedItem, index) => {
-                console.log(selectedItem, index);
                 setOeuvreTypeAModifier(selectedItem);
-                console.log(oeuvreTypeAModifier);
                 }}
                 defaultButtonText={'Choisir le type'}
                 buttonTextAfterSelection={(selectedItem, index) => {
@@ -332,6 +344,7 @@ const styles = StyleSheet.create({
     marginTop: 15,
     marginBottom: 15,
     marginLeft: 15,
+    marginRight: 15,
     alignItems: "center"
   },
   buttonsModifDelete: {
@@ -351,6 +364,12 @@ const styles = StyleSheet.create({
     marginLeft: "auto",
     marginRight: "auto",
     justifyContent: "center"
+  },
+  alertDelete: {
+    marginTop: 10,
+    width: "70%",
+    marginLeft: "auto",
+    marginRight: "auto"
   },
   titre: {
     fontSize: 22,

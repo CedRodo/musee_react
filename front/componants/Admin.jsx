@@ -15,6 +15,7 @@ const Admin = ({navigation}) => {
     const [roleCompte, setRoleCompte] = useState("");
     const [utilisateur, setUtilisateur] = useState({});
     const [messageErreur, setMessageErreur] = useState("");
+    const [showDelete, setShowDelete] = useState(false);
 
   ///////////
 
@@ -25,7 +26,7 @@ const Admin = ({navigation}) => {
     }
 
     async function supprimerUtilisateur(id) {
-        console.log("supprimé");
+        // console.log("supprimé");
 
         let response = await fetch("http://10.0.2.2:4004/admin/utilisateurs/" + id, {
             method: "DELETE"
@@ -40,8 +41,8 @@ const Admin = ({navigation}) => {
     }
 
     async function modifierUtilisateur(id) {
-        console.log("modification de: " + id);
-        console.log("roleCompte: " + roleCompte);
+        // console.log("modification de: " + id);
+        // console.log("roleCompte: " + roleCompte);
         
         let lesHeaders = {
         "Accept": "*/*",
@@ -53,7 +54,7 @@ const Admin = ({navigation}) => {
         "role" : roleCompte
         });
 
-        console.log(lesChamps);
+        // console.log(lesChamps);
 
         let response = await fetch("http://10.0.2.2:4004/admin/utilisateurs/" + id, { 
         method: "PUT",
@@ -61,7 +62,7 @@ const Admin = ({navigation}) => {
         headers : lesHeaders
         });
 
-        console.log("RESPONSE: ", response);
+        // console.log("RESPONSE: ", response);
 
         let data = await response.json();
 
@@ -78,13 +79,18 @@ const Admin = ({navigation}) => {
 
     }
 
-    async function compteAModifier(id, email, role) {
+    function compteAModifier(id, email, role) {
         setModifCompte(true);
         setCompteModifie(false);
-        console.log("modification");
+        setShowDelete(false);
         setIdCompte(id);
         setEmailCompte(email);
         setRoleCompte(role); 
+    }
+
+    function alerteSuppression(id) {
+      setShowDelete(true);
+      setIdCompte(id)
     }
 
     useEffect(function () {
@@ -110,9 +116,7 @@ const Admin = ({navigation}) => {
                 data={roles}
                 defaultValue={roleCompte}
                 onSelect={(selectedItem, index) => {
-                console.log(selectedItem, index);
                 setRoleCompte(selectedItem);
-                console.log(roleCompte);
                 }}
                 defaultButtonText={'Choisir le rôle'}
                 buttonTextAfterSelection={(selectedItem, index) => {
@@ -157,14 +161,21 @@ const Admin = ({navigation}) => {
                 </View>
                 <View style={styles.buttonsModifDelete}>
                     <TouchableHighlight style={styles.touchable1}>
-                    <Text style={styles.textTouchable2} onPress={()=>{supprimerUtilisateur(item._id)}}>
-                        Supprimer ce compte utilisateur            
+                    <Text style={styles.textTouchable2} onPress={()=>{alerteSuppression(item._id)}}>
+                        Supprimer            
                     </Text>
                     </TouchableHighlight>
                     <TouchableHighlight style={styles.touchable2}>
-                    <Text style={styles.textTouchable} onPress={()=>{compteAModifier(item._id, item.email, item.role)}}>Modifier ce compte utilisateur</Text>
+                    <Text style={styles.textTouchable} onPress={()=>{compteAModifier(item._id, item.email, item.role)}}>Modifier</Text>
                     </TouchableHighlight>
                 </View>
+                { (item._id === idCompte) && showDelete &&
+                <View style={{ width: "100%" }}>
+                  <TouchableHighlight style={ styles.alertDelete }>
+                      <Button style={{fontSize: 18 }} onPress={()=>{supprimerUtilisateur(item._id)}} title="Confirmer la suppression ?" />
+                  </TouchableHighlight>
+                </View>
+                }
             </View>
             )}
             keyExtractor={(item, index) => item._id}
@@ -182,12 +193,14 @@ const styles = StyleSheet.create({
     marginTop: 15,
     marginBottom: 15,
     marginLeft: 15,
+    marginRight: 15,
     alignItems: "center"
   },
   buttonsModifDelete: {
     flex: 1,
     flexDirection: "row", 
     marginTop: 10,
+    justifyContent: "center"
   },
   refresh: {
     marginTop: 30,
@@ -195,6 +208,12 @@ const styles = StyleSheet.create({
     marginLeft: "auto",
     marginRight: "auto",
     justifyContent: "center"
+  },
+  alertDelete: {
+    marginTop: 10,
+    width: "70%",
+    marginLeft: "auto",
+    marginRight: "auto"
   },
   titre: {
     fontSize: 22, textAlign: "center",

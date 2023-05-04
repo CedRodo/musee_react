@@ -79,7 +79,7 @@ const Login = ({navigation}) => {
       });
 
       let data = await response.json();
-      console.log("INSCRIPTION: ", data);
+      // console.log("INSCRIPTION: ", data);
 
       setMessageErreur("");
       setIdUtilisateurConnecte("");
@@ -137,7 +137,7 @@ const Login = ({navigation}) => {
 
       let data = await response.json();
       
-      console.log(data);
+      // console.log(data);
       
       if (data.length > 0) {
         return dispatch({ type: "NONLOGGUE" });
@@ -150,13 +150,13 @@ const Login = ({navigation}) => {
         setEmailUtilisateurConnecte(data.body.email);
         setRoleUtilisateurConnecte(data.body.role);
         setEmailCompteModification(data.body.email);
-        console.log("DATA isRedacteur", data.isRedacteur);
-        console.log("DATA isAdmin", data.isAdmin);
+        // console.log("DATA isRedacteur", data.isRedacteur);
+        // console.log("DATA isAdmin", data.isAdmin);
         data.isAdmin ? dispatch({type: "isAdminTrue"}) : dispatch({type: "isAdminFalse"})
         data.isRedacteur ? dispatch({type: "isRedacteurTrue"}) : dispatch({type: "isRedacteurFalse"})
         dispatch({type: "LOGGUE"});
-        console.log("isRole isAdmin", isRole.isAdmin);
-        console.log("isRole isRedacteur", isRole.isRedacteur);
+        // console.log("isRole isAdmin", isRole.isAdmin);
+        // console.log("isRole isRedacteur", isRole.isRedacteur);
 
         db.transaction(function(tx) {
             tx.executeSql(`DELETE FROM user`,
@@ -179,7 +179,7 @@ const Login = ({navigation}) => {
     }
 
     async function supprimerUtilisateur(id) {
-            console.log("supprimé");
+            // console.log("supprimé");
             let response = await fetch("http://10.0.2.2:4004/admin/utilisateurs/" + id, {
             method: "DELETE"
         });
@@ -191,7 +191,7 @@ const Login = ({navigation}) => {
     }
 
     async function modifierUtilisateur(id) {
-        console.log("modification de: " + id);
+        // console.log("modification de: " + id);
         
         let lesHeaders = {
         "Accept": "*/*",
@@ -203,7 +203,7 @@ const Login = ({navigation}) => {
         "role" : roleUtilisateurConnecte
         });
 
-        console.log(lesChamps);
+        // console.log(lesChamps);
 
         let response = await fetch("http://10.0.2.2:4004/compte/" + id, { 
         method: "PUT",
@@ -211,7 +211,7 @@ const Login = ({navigation}) => {
         headers : lesHeaders
         });
 
-        console.log("RESPONSE: ", response);
+        // console.log("RESPONSE: ", response);
 
         let data = await response.json();
 
@@ -337,23 +337,23 @@ const Login = ({navigation}) => {
           <Text style={{fontSize: 18, textAlign : "center"}} onPress={()=>{ 
         setModeCompte("modification"); } }>Modifier mon compte</Text>
       </TouchableHighlight>
-      { isRole.isAdmin &&
       <View>
+      { isRole.isAdmin &&
+      <>
         <TouchableHighlight style={ styles.touchable2} onPress={() => {navigation.navigate("Admin")}}>
         <Text style={styles.btnCourt}>Gestion des profils</Text>
         </TouchableHighlight>
-        <TouchableHighlight style={ styles.touchable2 }>
+      </>
+      }
+      { (isRole.isAdmin || isRole.isRedacteur) &&
+      <>
+        <TouchableHighlight style={ styles.touchable2 } onPress={() => {navigation.navigate("Publication")}}>
         <Text style={styles.btnCourt}>Publication</Text>
         </TouchableHighlight>
-      </View>
+      </>
       }
-      { isRole.isRedacteur &&
-      <View>
-      <TouchableHighlight style={ styles.touchable2 }>
-        <Text style={styles.btnCourt}>Publication</Text>
-      </TouchableHighlight>
       </View>
-    }
+    
     </View>
   }
    </View>
