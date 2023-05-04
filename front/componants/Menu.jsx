@@ -3,6 +3,7 @@ import React from 'react'
 
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { NavigationContainer } from "@react-navigation/native"
+import { useSelector } from "react-redux";
 import { createStackNavigator } from '@react-navigation/stack';
 
 import Accueil from './Accueil';
@@ -22,6 +23,9 @@ const Onglet = createMaterialBottomTabNavigator();
 // const Onglet = createDrawerNavigator();
 
 const Menu = () => {
+
+    const mode = useSelector((store) => store.reducerLoggue);
+
     return (
         <View style={styles.container}>
         <NavigationContainer>
@@ -46,18 +50,23 @@ const Menu = () => {
                             return <MaterialCommunityIcons name="head" size={24} color="red" />
                         }
                     }}/>
+                {(mode.statusLoggue == true)
+                ?
+                <>
                 <Onglet.Screen name="Admin" component={ Admin }  options={{
                     tabBarIcon : () => {
                             return <MaterialCommunityIcons name="key" size={24} color="brown"/>
                         },
-                     headerShown: false
                     }}/>
                 <Onglet.Screen name="Publication" component={ Publication }  options={{
                     tabBarIcon : () => {
                             return <MaterialCommunityIcons name="book" size={24} color="orange"/>
                         },
-                     headerShown: false
                     }}/>
+                </>
+                :
+                    <></>
+                }
             </Onglet.Navigator>
  
         </NavigationContainer>
