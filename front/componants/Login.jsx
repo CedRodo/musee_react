@@ -329,8 +329,8 @@ const Login = ({navigation}) => {
           <Text style={{fontSize: 18, textAlign : "center"}} onPress={()=>{ setShowDelete(true); }}>Supprimer mon compte</Text>
       </TouchableHighlight>
       { showDelete &&
-      <TouchableHighlight style={ styles.refresh }>
-          <Button style={{fontSize: 18 }} onPress={()=>{ supprimerUtilisateur(idUtilisateurConnecte); }} title="Confirmer la suppression de votre compte ?" />
+      <TouchableHighlight style={ styles.touchableGros }>
+          <Text style={{fontSize: 18, textAlign : "center", color : "white"}} onPress={()=>{ supprimerUtilisateur(idUtilisateurConnecte); }}>Confirmer la suppression de votre compte ?</Text>
       </TouchableHighlight>
       }
       <TouchableHighlight style={ styles.touchable2 }>
@@ -339,17 +339,21 @@ const Login = ({navigation}) => {
       </TouchableHighlight>
       { isRole.isAdmin &&
       <View>
-        <TouchableHighlight style={ styles.touchable2} onPress={() => {navigation.navigate("Admin")}}>
-        <Text style={styles.btnCourt}>Gestion des profils</Text>
-        </TouchableHighlight>
-        <TouchableHighlight style={ styles.touchable2 }>
-        <Text style={styles.btnCourt}>Publication</Text>
-        </TouchableHighlight>
+        <>
+          <TouchableHighlight style={ styles.touchable2} onPress={() => {navigation.navigate("Admin")}}>
+              <Text style={styles.btnCourt}>Gestion des profils</Text>
+          </TouchableHighlight>
+        </>  
+        <>
+            <TouchableHighlight style={ styles.touchable2} onPress={() => {navigation.navigate("Publication")}}>
+              <Text style={styles.btnCourt}>Publication</Text>
+            </TouchableHighlight>
+        </>
       </View>
       }
       { isRole.isRedacteur &&
       <View>
-      <TouchableHighlight style={ styles.touchable2 }>
+      <TouchableHighlight style={ styles.touchable2 } onPress={() => {navigation.navigate("Publication")}}>
         <Text style={styles.btnCourt}>Publication</Text>
       </TouchableHighlight>
       </View>
@@ -403,6 +407,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignSelf: "center",
     marginTop: 30
+  },
+  touchableGros : {
+    backgroundColor: "red",
+    width : 170,
+    height: 100,
+    borderRadius: 15,
+    alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "center",
+    marginTop: 30,
+    paddingHorizontal: 10
   },
   btnCourt : {
     fontSize: 18

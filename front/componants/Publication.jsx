@@ -315,8 +315,8 @@ const Publication = ({navigation}) => {
                 oeuvreModifie && modifOeuvre &&
                 <Text style={{ marginTop: 20, paddingHorizontal: 20 }}>{ JSON.stringify(oeuvre.message)}</Text>
             }
-            <TouchableHighlight style={ styles.retourPublication }>
-                <Button title="Retour" onPress={() => { setModifOeuvre(false); setShow(true); setOeuvreModifiee(false); }} />
+            <TouchableHighlight style={ styles.touchable }>
+                <Text style={styles.btnCourt} onPress={() => { setModifOeuvre(false); setShow(true); setOeuvreModifiee(false); }}>Retour</Text>
             </TouchableHighlight>
         </ScrollView>
         }

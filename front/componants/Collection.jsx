@@ -74,6 +74,7 @@ const Collection = () => {
       console.log("DATA: ", data);
       setOeuvres(data);
     }
+    setShowFlatList(true)
   }
 
   function zoom(toggle) {
@@ -109,7 +110,7 @@ const Collection = () => {
                   <Text style={styles.titre}>{item.titre}</Text>
                   <Text style={{fontSize : 16, textAlign : "center"}}>{item.auteur}</Text>
                   <TouchableWithoutFeedback onPress={()=>{pageOeuvre(item._id)}}>
-                    <Image source={{uri : item.imageUrl, width: 400, height : 315} } resizeMode="contain" style={styles.image} />
+                    <Image source={{uri : item.imageUrl, width: 350, height : 315} } resizeMode="contain" style={styles.image} />
                   </TouchableWithoutFeedback>
               </View>
             )
@@ -133,7 +134,7 @@ const Collection = () => {
             </TouchableWithoutFeedback>
             <Text style={styles.titre2}>{oeuvreUnique.titre}</Text>
               <TouchableWithoutFeedback onPress={()=>zoom(zoomToggle)} style={{ width: 150,height: 200 }}>
-                <Image source={{ uri: oeuvreUnique.imageUrl, width: imageWidth, height: imageHeight }}/>
+                <Image source={{ uri: oeuvreUnique.imageUrl, width: imageWidth, height: imageHeight }} resizeMode="contain"/>
                 
               </TouchableWithoutFeedback>
             <Text style={styles.auteur}>{oeuvreUnique.auteur}</Text>
@@ -158,7 +159,7 @@ const styles = StyleSheet.create({
    button : {marginBottom : 20},
    instructions : {width: 350, },
   //  sc : {marginTop: 20},
-  //image : {marginLeft: -15},
+  image : {marginLeft: 15},
   overlay : {alignItems: "center",  backgroundColor:"lightgrey", height: 1000}, //, backgroundColor: "#8f4902"
   description : {paddingHorizontal: 10, marginTop: 20, borderWidth: 2, fontSize: 16, marginHorizontal: 10},
   auteur : {fontStyle: "italic", fontSize: 18, },

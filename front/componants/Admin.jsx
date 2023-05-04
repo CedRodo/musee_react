@@ -141,8 +141,8 @@ const Admin = ({navigation}) => {
                 compteModifie &&
                 <Text style={{ marginTop: 20, paddingHorizontal: 20 }}>L'utilisateur { JSON.stringify(utilisateur.oldEmail)} a bien été modifié</Text>
             }
-            <TouchableHighlight style={ styles.retourGestionProfil }>
-                <Button title="Retour" onPress={() => { setModifCompte(false); }} />
+            <TouchableHighlight style={ styles.touchable }>
+                <Text style={styles.btnCourt} onPress={() => { setModifCompte(false); }}>Retour</Text>
             </TouchableHighlight>
         </View>
         :
