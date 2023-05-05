@@ -20,6 +20,9 @@ const Accueil = () => {
   const [oeuvre7Id, setOeuvre7Id] = useState("");
   const [oeuvre8Id, setOeuvre8Id] = useState("");
   const [oeuvre9Id, setOeuvre9Id] = useState("");
+  const [oeuvre10Id, setOeuvre10Id] = useState("");
+  const [oeuvre11Id, setOeuvre11Id] = useState("");
+  const [oeuvre12Id, setOeuvre12Id] = useState("");
 
   const [imageWidth, setImageWidth] = useState(200);
   const [imageHeight, setImageHeight] = useState(400);
@@ -67,6 +70,9 @@ const Accueil = () => {
       setOeuvre7Id(accueilOeuvres.body[6]._id);
       setOeuvre8Id(accueilOeuvres.body[7]._id);
       setOeuvre9Id(accueilOeuvres.body[8]._id);
+      setOeuvre10Id(accueilOeuvres.body[9]._id);
+      setOeuvre11Id(accueilOeuvres.body[10]._id);
+      setOeuvre12Id(accueilOeuvres.body[11]._id);
 
     }
     
@@ -139,6 +145,21 @@ const Accueil = () => {
             <View testID="Neuf" style={styles.slide1}>
               <TouchableWithoutFeedback onPress={()=>{pageOeuvre(oeuvre9Id)}}>
                 <ImageBackground source={ { uri: accueilOeuvres.body[8].imageUrl }  } style={{width: '100%', height: '100%'}} resizeMode="contain" />
+              </TouchableWithoutFeedback>
+            </View>
+            <View testID="Dix" style={styles.slide1}>
+              <TouchableWithoutFeedback onPress={()=>{pageOeuvre(oeuvre10Id)}}>
+                <ImageBackground source={ { uri: accueilOeuvres.body[9].imageUrl }  } style={{width: '100%', height: '100%'}} resizeMode="contain" />
+              </TouchableWithoutFeedback>
+            </View>
+            <View testID="Onze" style={styles.slide1}>
+              <TouchableWithoutFeedback onPress={()=>{pageOeuvre(oeuvre11Id)}}>
+                <ImageBackground source={ { uri: accueilOeuvres.body[10].imageUrl }  } style={{width: '100%', height: '100%'}} resizeMode="contain" />
+              </TouchableWithoutFeedback>
+            </View>
+            <View testID="Douze" style={styles.slide1}>
+              <TouchableWithoutFeedback onPress={()=>{pageOeuvre(oeuvre12Id)}}>
+                <ImageBackground source={ { uri: accueilOeuvres.body[11].imageUrl }  } style={{width: '100%', height: '100%'}} resizeMode="contain" />
               </TouchableWithoutFeedback>
             </View>
           </Swiper>

@@ -13,23 +13,20 @@ const Collection = () => {
   const [show, setShow] = useState(true);
   const [zoomToggle, setZoomToggle] = useState(false);
 
-  const [showFlatList, setShowFlatList] = useState(false)
+  const [showList, setShowList] = useState(false)
 
   const [imageWidth, setImageWidth] = useState(150);
   const [imageHeight, setImageHeight] = useState(200);
 
 
   async function affiche() {
-    // await fetch("http://192.168.1.98:4004/collections") 
-    // .then(response => response.json())
-    // .then(data => setOeuvre(data.body))
 
     let response = await fetch("http://10.0.2.2:4004/collections", { 
       method: "GET"
     });
 
     let data = await response.json();
-    console.log("DATA: ", data);
+    // console.log("DATA: ", data);
 
     setOeuvres(data);
   }
@@ -39,17 +36,17 @@ const Collection = () => {
   }, [])
 
   async function pageOeuvre(id) {
-    console.log("ID: ", id);
+    // console.log("ID: ", id);
 
     let response = await fetch("http://10.0.2.2:4004/collections/" + id, { 
       method: "GET"
     });
 
     let data = await response.json();
-    console.log("DATA: ", data);
+    // console.log("DATA: ", data);
 
     setOeuvreUnique(data);
-    console.log("OEUVRE: ", oeuvres);
+    
     setShow(!show);
   }
 
@@ -59,10 +56,10 @@ const Collection = () => {
         method: "GET"
       });
       let data = await response.json();
-      console.log("Oeuvre: ", data);
+      
       setOeuvres(data);
     }
-    setShowFlatList(true)
+    setShowList(true);
   }
 
   async function rechercheArtisteOeuvres(){  
@@ -71,9 +68,10 @@ const Collection = () => {
         method: "GET"
       });
       let data = await response.json();
-      console.log("DATA: ", data);
+      
       setOeuvres(data);
     }
+    setShowList(true);
   }
 
   function zoom(toggle) {
@@ -101,7 +99,7 @@ const Collection = () => {
           <TextInput style={{backgroundColor : "white", fontSize : 18, padding : 7 , marginBottom : 10,
    borderWidth : 1 , borderColor : "black", marginTop: 20}} placeholder="Artiste" onChangeText={(texte) => {setArtisteRecherche(texte)}}/>
           <Button title="Rechercher" onPress={rechercheArtisteOeuvres} style={styles.button} value={artisteRecherche}/>
-          {showFlatList
+          {showList
           ?
           oeuvres.body.map((item, index) => {
             return (
@@ -109,7 +107,7 @@ const Collection = () => {
                   <Text style={styles.titre}>{item.titre}</Text>
                   <Text style={{fontSize : 16, textAlign : "center"}}>{item.auteur}</Text>
                   <TouchableWithoutFeedback onPress={()=>{pageOeuvre(item._id)}}>
-                    <Image source={{uri : item.imageUrl, width: 400, height : 315} } resizeMode="contain" style={styles.image} />
+                    <Image source={{uri : item.imageUrl, width: 350, height : 315} } resizeMode="contain" style={styles.image} />
                   </TouchableWithoutFeedback>
               </View>
             )
@@ -133,7 +131,7 @@ const Collection = () => {
             </TouchableWithoutFeedback>
             <Text style={styles.titre2}>{oeuvreUnique.titre}</Text>
               <TouchableWithoutFeedback onPress={()=>zoom(zoomToggle)} style={{ width: 150,height: 200 }}>
-                <Image source={{ uri: oeuvreUnique.imageUrl, width: imageWidth, height: imageHeight }}/>
+                <Image source={{ uri: oeuvreUnique.imageUrl, width: imageWidth, height: imageHeight }} resizeMode="contain"/>
                 
               </TouchableWithoutFeedback>
             <Text style={styles.auteur}>{oeuvreUnique.auteur}</Text>
@@ -154,11 +152,14 @@ const styles = StyleSheet.create({
    input : { backgroundColor : "white", fontSize : 18, padding : 7 , marginBottom : 10,
    borderWidth : 1 , borderColor : "black"},
    titre : {fontSize : 24, textAlign: "center"},
-   espace : {backgroundColor : "lightblue", opacity: 0.8},
+   espace : {backgroundColor : "lightblue", opacity: 0.8, paddingBottom: 50, marginTop: 10},
    button : {marginBottom : 20},
    instructions : {width: 350, },
   //  sc : {marginTop: 20},
-  //image : {marginLeft: -15},
+  image : {
+    marginLeft: "auto",
+    marginRight: "auto"
+  },
   overlay : {alignItems: "center",  backgroundColor:"lightgrey", height: 1000}, //, backgroundColor: "#8f4902"
   description : {paddingHorizontal: 10, marginTop: 20, borderWidth: 2, fontSize: 16, marginHorizontal: 10},
   auteur : {fontStyle: "italic", fontSize: 18, },

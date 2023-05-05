@@ -276,7 +276,7 @@ const Login = ({navigation}) => {
             { messageErreur !== "" &&
             <Text style={styles.alertMessage}>{ messageErreur }</Text>
             }
-            <TouchableHighlight onPress={enreg} style={ styles.touchable }>
+            <TouchableHighlight onPress={enreg} style={ styles.touchable3 }>
               <Text style={styles.btnCourt}>Valider</Text>
             </TouchableHighlight>
             <TouchableHighlight onPress={() => {setShow(true)} } style={ styles.touchable }>
@@ -292,7 +292,7 @@ const Login = ({navigation}) => {
             { messageErreur !== "" &&
             <Text style={styles.alertMessage}>{ messageErreur }</Text>
             }
-            <TouchableHighlight onPress={() => {logguage(); }} style={ styles.touchable }>
+            <TouchableHighlight onPress={() => {logguage(); }} style={ styles.touchable3 }>
               <Text style={styles.btnCourt}>Valider</Text>
             </TouchableHighlight>
             <TouchableHighlight onPress={() => {setShow(true); setMessageErreur("");} } style={ styles.touchable }>
@@ -312,7 +312,7 @@ const Login = ({navigation}) => {
       <Text style={styles.oldEmail}>{emailUtilisateurConnecte}</Text>
       <TextInput placeholder="email" onChangeText={(texte) => setEmailCompteModification(texte)}  style={styles.input} value={emailCompteModification}  />
       <TextInput placeholder="password" onChangeText={(texte) => setPasswordCompteModification(texte)}  style={styles.input} secureTextEntry={true} />
-      <TouchableHighlight onPress={() => {modifierUtilisateur(idUtilisateurConnecte); }} style={ styles.touchable }>
+      <TouchableHighlight onPress={() => {modifierUtilisateur(idUtilisateurConnecte); }} style={ styles.touchable3 }>
         <Text style={styles.btnCourt}>Valider</Text>
       </TouchableHighlight>
       <TouchableHighlight onPress={() => {setShow(true); setModeCompte("")} } style={ styles.touchable }>
@@ -329,8 +329,8 @@ const Login = ({navigation}) => {
           <Text style={{fontSize: 18, textAlign : "center"}} onPress={()=>{ setShowDelete(true); }}>Supprimer mon compte</Text>
       </TouchableHighlight>
       { showDelete &&
-      <TouchableHighlight style={ styles.refresh }>
-          <Button style={{fontSize: 18 }} onPress={()=>{ supprimerUtilisateur(idUtilisateurConnecte); }} title="Confirmer la suppression de votre compte ?" />
+      <TouchableHighlight style={ styles.touchableGros }>
+          <Text style={{fontSize: 18, textAlign : "center", color : "white"}} onPress={()=>{ supprimerUtilisateur(idUtilisateurConnecte); }}>Confirmer la suppression de votre compte ?</Text>
       </TouchableHighlight>
       }
       <TouchableHighlight style={ styles.touchable2 }>
@@ -376,6 +376,17 @@ const styles = StyleSheet.create({
     borderWidth : 1,
     borderColor : "black"
   },
+  touchableGros : {
+    backgroundColor: "red",
+    width : 170,
+    height: 100,
+    borderRadius: 15,
+    alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "center",
+    marginTop: 30,
+    paddingHorizontal: 10
+  },
   titre : {fontSize : 24, textAlign: "center"},
   touchable : {
     backgroundColor: "lightblue",
@@ -397,6 +408,16 @@ const styles = StyleSheet.create({
   touchable2 : {
     backgroundColor: "lightblue",
     width : 170,
+    height: 50,
+    borderRadius: 15,
+    alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "center",
+    marginTop: 30
+  },
+  touchable3 : {
+    backgroundColor: "skyblue",
+    width : 120,
     height: 50,
     borderRadius: 15,
     alignItems: "center",

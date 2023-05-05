@@ -138,15 +138,15 @@ const Admin = ({navigation}) => {
             { messageErreur !== "" &&
             <Text style={styles.alertMessage}>{ messageErreur }</Text>
             }
-                <TouchableHighlight style={ styles.touchable }>
+                <TouchableHighlight style={ styles.touchable3 }>
                 <Text style={styles.btnCourt} onPress={() => { modifierUtilisateur(idCompte); }}>Valider</Text>
             </TouchableHighlight>
             {
                 compteModifie &&
                 <Text style={{ marginTop: 20, paddingHorizontal: 20 }}>L'utilisateur { JSON.stringify(utilisateur.oldEmail)} a bien été modifié</Text>
             }
-            <TouchableHighlight style={ styles.retourGestionProfil }>
-                <Button title="Retour" onPress={() => { setModifCompte(false); }} />
+            <TouchableHighlight style={ styles.touchable }>
+                <Text style={styles.btnCourt} onPress={() => { setModifCompte(false); }}>Retour</Text>
             </TouchableHighlight>
         </View>
         :
@@ -245,6 +245,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginLeft: 10
   },
+  touchable3 : {
+    backgroundColor: "skyblue",
+    width : 120,
+    height: 50,
+    borderRadius: 15,
+    alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "center",
+    marginTop: 30
+},
   textTouchable: { 
     fontSize: 15, 
     textAlign: "center" 

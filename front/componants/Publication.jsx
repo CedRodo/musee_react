@@ -311,12 +311,12 @@ const Publication = ({navigation}) => {
             <Text style={styles.alertMessage}>{ messageErreur }</Text>
             }
             { modifOeuvre ?
-            <TouchableHighlight style={ styles.touchable }>
-                <Text style={styles.btnCourt} onPress={() => { modifierOeuvre(idOeuvre); }}>Valider la modification</Text>
+            <TouchableHighlight style={ styles.touchable3 }>
+                <Text style={styles.btnCourt} onPress={() => { modifierOeuvre(idOeuvre); }}>Valider</Text>
             </TouchableHighlight>
             :
-            <TouchableHighlight style={ styles.touchable }>
-                <Text style={styles.btnCourt} onPress={() => { publierOeuvre(); }}>Publier l'article</Text>
+            <TouchableHighlight style={ styles.touchable3 }>
+                <Text style={styles.btnCourt} onPress={() => { publierOeuvre(); }}>Publier</Text>
             </TouchableHighlight>
             }
             {
@@ -327,8 +327,8 @@ const Publication = ({navigation}) => {
                 oeuvreModifie && modifOeuvre &&
                 <Text style={{ marginTop: 20, paddingHorizontal: 20 }}>{ JSON.stringify(oeuvre.message)}</Text>
             }
-            <TouchableHighlight style={ styles.retourPublication }>
-                <Button title="Retour" onPress={() => { setModifOeuvre(false); setShow(true); setOeuvreModifiee(false); }} />
+            <TouchableHighlight style={ styles.touchable }>
+                <Text style={styles.btnCourt} onPress={() => { setModifOeuvre(false); setShow(true); setOeuvreModifiee(false); }}>Retour</Text>
             </TouchableHighlight>
         </ScrollView>
         }
@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
   },
   touchable : {
     backgroundColor: "lightblue",
-    width : 200,
+    width : 120,
     height: 50,
     borderRadius: 15,
     alignItems: "center",
@@ -412,6 +412,16 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderRadius: 15,
     alignItems: "center",
     marginLeft: 10
+  },
+  touchable3 : {
+    backgroundColor: "skyblue",
+    width : 120,
+    height: 50,
+    borderRadius: 15,
+    alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "center",
+    marginTop: 30
   },
   textTouchable: { 
     fontSize: 15, 
