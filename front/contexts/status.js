@@ -1,6 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit";
 
-const profil = { statusLoggue : false, isAdmin : false, isRedacteur : false }
+const profil = {
+    // id: "",
+    // email: "",
+    statusLoggue : false,
+    isAdmin : false,
+    isRedacteur : false
+}
 
 function reducerLoggue(state = profil, action){
     switch(action.type){

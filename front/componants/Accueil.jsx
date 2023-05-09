@@ -1,12 +1,10 @@
-import { ScrollView, StyleSheet, Text, View, Image, Button, FlatList, TouchableWithoutFeedback, ImageBackground, ImageBackgroundBase } from 'react-native'
-import React, { useEffect, useState, useContext } from 'react'
+import { ScrollView, StyleSheet, Text, View, Image, TouchableWithoutFeedback, ImageBackground } from 'react-native'
+import React, { useEffect, useState } from 'react'
 import Swiper from 'react-native-swiper';
 
 const Accueil = () => {
 
-  // const [accueilOeuvres , setAccueilOeuvres] = useState([{body:[{imageUrl:"https://cdn.mediatheque.epmoo.fr/link/3c9igq/bik19u984kke0yo.jpg"}]}]);
   const [accueilOeuvres , setAccueilOeuvres] = useState({});
-  const [id, setId] = useState("");
   const [oeuvre, setOeuvre] = useState({});
   const [show, setShow] = useState(true);
   const [zoomToggle, setZoomToggle] = useState(false);
@@ -77,10 +75,6 @@ const Accueil = () => {
     }
     
   }, [accueilOeuvres])
-  
-  // useEffect(function(){
-  //   pageOeuvre(id);
-  // }, [id]);
 
   function zoom(toggle) {
     if (toggle == false) {      
@@ -93,8 +87,7 @@ const Accueil = () => {
       return setZoomToggle(false);
     }
   }
-//  const imageJoconde = "../assets/portrait-de-l-artiste-van-gogh.jpg"
-//  const imageJoconde = accueilOeuvres.body[0].image
+  
   return (
 
     <View style={styles.container}>
@@ -173,7 +166,7 @@ const Accueil = () => {
           <TouchableWithoutFeedback onPress={
                  () => {setShow(!show);
                 }}>
-                <Text style={{fontSize: 24, marginTop: 10}}>↶ RETOUR</Text>
+                <Text style={{fontSize: 24, marginTop: 20}}>↶ RETOUR</Text>
           </TouchableWithoutFeedback>
           <Text>{oeuvre.titre}</Text>
             <TouchableWithoutFeedback onPress={()=>zoom(zoomToggle)} style={{ width: 200,height: 400 }}>

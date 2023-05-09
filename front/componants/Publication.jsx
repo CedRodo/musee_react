@@ -1,5 +1,7 @@
 import { StyleSheet, Text, View, FlatList, Button, ScrollView } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { ProfilContext } from '../contexts/profilContext';
 import { TextInput, TouchableHighlight } from "react-native-gesture-handler";
 import SelectDropdown from 'react-native-select-dropdown';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -8,6 +10,9 @@ import * as SQLite from "expo-sqlite";
 const db = SQLite.openDatabase("demo.sqlite");
 
 const Publication = ({navigation}) => {
+
+    const isRole = useSelector((store) => store.reducerIsRole);
+    const { monProfil } = useContext(ProfilContext);
 
     const [oeuvres, setOeuvres] = useState([]);
     const [modifOeuvre, setModifOeuvre] = useState(false);
@@ -25,8 +30,6 @@ const Publication = ({navigation}) => {
     const [oeuvreDescriptionAModifier, setOeuvreDescriptionAModifier] = useState("");
 
     const [idUtilisateur, setIdUtilisateur] = useState("");
-    const [isAdmin, setIsAdmin] = useState("");
-    const [isRedacteur, setIsRedacteur] = useState("");
     const [tokenUtilisateur, setTokenUtilisateur] = useState("");
 
     const [idOeuvre, setIdOeuvre] = useState("");
@@ -36,145 +39,153 @@ const Publication = ({navigation}) => {
 
   ///////////
 
-    async function affiche() {
+  function getToken() {
     
-      db.transaction(function(tx) {
-            tx.executeSql(`SELECT * FROM user`,
-                        [],
-                        function(transact, resultat) { console.log("SELECT getIdUtilisateur réussi: ", resultat.rows._array[0].idUtilisateur); setIdUtilisateur(resultat.rows._array[0].idUtilisateur);  setIdUtilisateur(resultat.rows._array[0].idUtilisateur); setIsAdmin(resultat.rows._array[0].isAdmin); setIsRedacteur(resultat.rows._array[0].isRedacteur); setTokenUtilisateur(resultat.rows._array[0].token)},
-                        function(transact, err) { console.log("SELECT échec", err); })
-            });     
+    db.transaction(function(tx) {
+          tx.executeSql(`SELECT * FROM user`,
+                      [],
+                      function(transact, resultat) { console.log("SELECT getToken réussi: ", resultat.rows._array[0]); setTokenUtilisateur(resultat.rows._array[0].token); },
+                      function(transact, err) { console.log("SELECT échec", err); })
+          });
 
-      console.log("idUtilisateur: ", idUtilisateur);
-      console.log("isAdmin: ", isAdmin);
-      console.log("isRedacteur: ", isRedacteur);
-      console.log("tokenUtilisateur: ", tokenUtilisateur);  
+  }
+
+    async function affiche() {
         
         let headers = {
           "Accept": "*/*",
-          "Content-Type": "application/json",
-          "token": tokenUtilisateur
+          "Content-Type": "application/json"
         }
 
-        let response = await fetch("http://10.0.2.2:4004/publications/", { 
+        let idRedacteur;
+
+        isRole.isRedacteur === true ? idRedacteur = monProfil.id : idRedacteur = "";
+
+        let response = await fetch("http://10.0.2.2:4004/publications/" + idRedacteur, { 
           method: "GET",
           headers : headers
         });
 
-        // console.log("RESPONSE: ", response);
-
         let data = await response.json(); 
 
-        // console.log("DATA: ", data);
-
-        if (data.message == "undefined") {
+        if (data.body == "undefined") {
           setMessageErreur(data.message);
         } else {
-          setOeuvres(data);
+          setOeuvres(data.body);
         }
 
       }        
 
     async function supprimerOeuvre(id) {
 
-        let response = await fetch("http://10.0.2.2:4004/publications/" + id, {
-            method: "DELETE"
-        });
+      getToken();
+      
+      let lesHeaders = {
+        "Accept": "*/*",
+        "Content-Type": "application/json",
+        "token": monProfil.token
+      }
 
-        let data = await response.json();
+      let response = await fetch("http://10.0.2.2:4004/publications/" + id, {
+        method: "DELETE",
+        headers : lesHeaders
+      });
 
-        setShowDelete(false);
+      let data = await response.json();
 
-        setOeuvre(data);
+      setShowDelete(false);
 
-        console.log(data, " a été supprimé");
-        affiche();
+      setOeuvre(data);
+
+      console.log(data, " a été supprimé");
+      affiche();
+
     }
 
     async function publierOeuvre() { 
+
+      getToken();
         
-        let lesHeaders = {
+      let lesHeaders = {
         "Accept": "*/*",
-        "Content-Type": "application/json"
-        }
-        let lesChamps = JSON.stringify({
-          "titre" : oeuvreTitreAModifier,
-          "auteur" : oeuvreAuteurAModifier,
-          "type" : oeuvreTypeAModifier,
-          "imageUrl" : oeuvreImageUrlAModifier,
-          "description" : oeuvreDescriptionAModifier,
-          "date_oeuvre" : oeuvreDateCreationAModifier,
-          "date_publication" : new Date(),
-          "idRedacteur": idUtilisateur,
-        });
+        "Content-Type": "application/json",
+        "token": monProfil.token
+      }
 
-        // console.log("lesChamps: ", lesChamps);
+      let lesChamps = JSON.stringify({
+        "titre" : oeuvreTitreAModifier,
+        "auteur" : oeuvreAuteurAModifier,
+        "type" : oeuvreTypeAModifier,
+        "imageUrl" : oeuvreImageUrlAModifier,
+        "description" : oeuvreDescriptionAModifier,
+        "date_oeuvre" : oeuvreDateCreationAModifier,
+        "date_publication" : new Date(),
+        "idRedacteur": monProfil.id
+      });
 
-        let response = await fetch("http://10.0.2.2:4004/publications/", { 
-          method: "POST",
-          body: lesChamps,
-          headers : lesHeaders
-        });
+      let response = await fetch("http://10.0.2.2:4004/publications/", { 
+        method: "POST",
+        body: lesChamps,
+        headers : lesHeaders
+      });
 
-        // console.log("RESPONSE: ", response);
+      let data = await response.json();
 
-        let data = await response.json();
-
-        
-        if (data.body !== "undefined") { 
-            setOeuvre(data);
-            setMessageErreur("");
-            navigation.navigate("Publication");
-        }  else {
-            setMessageErreur(data.message);
-        }
+      
+      if (data.body !== "undefined") { 
+          setOeuvre(data);
+          setMessageErreur("");
+          navigation.navigate("Publication");
+      }  else {
+          setMessageErreur(data.message);
+      }
 
     }
 
     async function modifierOeuvre(id) {
-        // console.log("modification de: " + id);
+
+      getToken();
+
+      console.log("tokenUtilisateur: ", tokenUtilisateur);
         
-        let lesHeaders = {
+      let lesHeaders = {
         "Accept": "*/*",
-        "Content-Type": "application/json"
-        }
-        if (oeuvreDateCreationAModifier == 0) {
-          oeuvreDateCreationAModifier = new Date();
-        }
-        let lesChamps = JSON.stringify({
-          "titre" : oeuvreTitreAModifier,
-          "auteur" : oeuvreAuteurAModifier,
-          "type" : oeuvreTypeAModifier,
-          "imageUrl" : oeuvreImageUrlAModifier,
-          "date_oeuvre" : oeuvreDateCreationAModifier,
-          "date_modification" : oeuvreDateCreationAModifier,
-          "idUtilisateur" : idUtilisateur
-        });
+        "Content-Type": "application/json",
+        "token": monProfil.token
+      }
 
-        // console.log(lesChamps);
+      if (oeuvreDateCreationAModifier == 0) {
+        oeuvreDateCreationAModifier = new Date();
+      }
 
-        let response = await fetch("http://10.0.2.2:4004/publications/" + id, { 
+      let lesChamps = JSON.stringify({
+        "titre" : oeuvreTitreAModifier,
+        "auteur" : oeuvreAuteurAModifier,
+        "type" : oeuvreTypeAModifier,
+        "imageUrl" : oeuvreImageUrlAModifier,
+        "date_oeuvre" : oeuvreDateCreationAModifier,
+        "date_modification" : oeuvreDateCreationAModifier,
+        "idUtilisateur" : monProfil.id
+      });
+
+      let response = await fetch("http://10.0.2.2:4004/publications/" + id, { 
         method: "PUT",
         body: lesChamps,
         headers : lesHeaders
-        });
+      });
 
-        // console.log("RESPONSE: ", response);
+      let data = await response.json();
 
-        let data = await response.json();
-
-        console.log(data, " a été modifié");
-
-        
-        if (data.body !== "undefined") { 
-          setOeuvre(data);
-          setOeuvreModifiee(true);
-          setMessageErreur("");
-          navigation.navigate("Publication");
-        }  else {
-          setOeuvre(data);
-          setMessageErreur(data.message);
-        }
+      
+      if (data.body !== "undefined") { 
+        setOeuvre(data);
+        setOeuvreModifiee(true);
+        setMessageErreur("");
+        navigation.navigate("Publication");
+      }  else {
+        setOeuvre(data);
+        setMessageErreur(data.message);
+      }
 
     }
 
@@ -191,6 +202,7 @@ const Publication = ({navigation}) => {
         setOeuvreDescriptionAModifier(description); 
         setOeuvreDateCreationAModifier(dateOeuvre); 
         setOeuvreDatePublicationAModifier(datePublication); 
+
         if (dateModification !== null) setOeuvreDateModificationAModifier(dateModification); 
     }
 
@@ -230,106 +242,108 @@ const Publication = ({navigation}) => {
     const types = ["peinture", "sculpture", "photographie", "art décoratif"];
 
   return (
-    <View style={{ marginTop: 30, paddingBottom: 200 }}>
+    <View style={{ marginTop: 30, paddingBottom: 5 }}>
       { show &&
-      <>
-      <Text style={styles.titre}>Publication d'articles</Text>
+      <View>
+        <Text style={styles.titre}>Publication d'articles</Text>
         <TouchableHighlight style={styles.newArticle}>
           <Button title="Publier un article" onPress={()=>{ setShow(false); setModifOeuvre(false); setOeuvre(""); }} />
         </TouchableHighlight>
-        <FlatList
-            data={oeuvres}
-            renderItem={({ item }) => (
-            <View style={styles.affichageView}>
-                <View>
-                    <Text style={styles.textCompte1}>Titre : {item.titre}</Text>
-                    <Text style={styles.textCompte1}>Auteur : {item.auteur}</Text>
-                    <Text style={styles.textCompte1}>Date de publication : {item.date_publication}</Text>
-                </View>
-                <View style={styles.buttonsModifDelete}>
-                    <TouchableHighlight style={styles.touchable1}>
-                      <Text style={styles.textTouchable2} onPress={()=>{alerteSuppression(item._id)}}>Supprimer</Text>
+        <View style={styles.flatList}>
+          <FlatList
+              data={oeuvres}
+              renderItem={({ item }) => (
+              <View style={styles.affichageView}>
+                  <View>
+                      <Text style={styles.textCompte1}>Titre : {item.titre}</Text>
+                      <Text style={styles.textCompte1}>Auteur : {item.auteur}</Text>
+                      <Text style={styles.textCompte1}>Date de publication : {item.date_publication}</Text>
+                  </View>
+                  <View style={styles.buttonsModifDelete}>
+                      <TouchableHighlight style={styles.touchable1}>
+                        <Text style={styles.textTouchable2} onPress={()=>{alerteSuppression(item._id)}}>Supprimer</Text>
+                      </TouchableHighlight>
+                      <TouchableHighlight style={styles.touchable2}>
+                        <Text style={styles.textTouchable} onPress={()=>{oeuvreAModifier(item._id, item.titre, item.auteur, item.type, item.imageUrl, item.description, item.date_oeuvre, item.date_publication, item.date_modification, item.date_publication)}}>Modifier</Text>
+                      </TouchableHighlight>
+                  </View>
+                  { (item._id === idOeuvre) && showDelete &&
+                  <View style={{ width: "100%" }}>
+                    <TouchableHighlight style={ styles.alertDelete }>
+                        <Button style={{fontSize: 18 }} onPress={()=>{supprimerOeuvre(item._id)}} title="Confirmer la suppression ?" />
                     </TouchableHighlight>
-                    <TouchableHighlight style={styles.touchable2}>
-                      <Text style={styles.textTouchable} onPress={()=>{oeuvreAModifier(item._id, item.titre, item.auteur, item.type, item.imageUrl, item.description, item.date_oeuvre, item.date_publication, item.date_modification, item.date_publication)}}>Modifier</Text>
-                    </TouchableHighlight>
-                </View>
-                { (item._id === idOeuvre) && showDelete &&
-                <View style={{ width: "100%" }}>
-                  <TouchableHighlight style={ styles.alertDelete }>
-                      <Button style={{fontSize: 18 }} onPress={()=>{supprimerOeuvre(item._id)}} title="Confirmer la suppression ?" />
-                  </TouchableHighlight>
-                </View>
-                }
-            </View>
-            )}
-            keyExtractor={(item, index) => item._id}
-        />        
-        </>
-        }
-        { !show && 
-        <ScrollView>
-            { modifOeuvre ? <Text style={styles.titre2}>Modification</Text> : <Text style={styles.titre2}>Nouvel article</Text> }
-            { oeuvreDatePublicationAModifier !== 0 && <>
-            <Text style={styles.titre3}>Date de publication: { oeuvreDatePublicationAModifier }</Text>
-            </>
-            }
-            { oeuvreDateModificationAModifier !== 0 && <>
-            <Text style={styles.titre3}>Date de modification: { oeuvreDateModificationAModifier }</Text>
-            </>
-            }
-            <TextInput placeholder="Titre de l'oeuvre" onChangeText={(texte) => setOeuvreTitreAModifier(texte)}  style={styles.input} value={oeuvreTitreAModifier} />
-            <TextInput placeholder="Artiste" onChangeText={(texte) => setOeuvreAuteurAModifier(texte)}  style={styles.input} value={oeuvreAuteurAModifier} /> 
-            <TextInput placeholder="Date de création de l'oeuvre" onChangeText={(texte) => setOeuvreDateCreationAModifier(texte)}  style={styles.input} value={oeuvreDateCreationAModifier} /> 
-            <TextInput placeholder="URL de l'image" onChangeText={(texte) => setOeuvreImageUrlAModifier(texte)}  style={styles.input} value={oeuvreImageUrlAModifier} /> 
-            <SelectDropdown
-                data={types}
-                // defaultValue={types[0]}
-                onSelect={(selectedItem, index) => {
-                setOeuvreTypeAModifier(selectedItem);
-                }}
-                defaultButtonText={'Choisir le type'}
-                buttonTextAfterSelection={(selectedItem, index) => {
-                return selectedItem;
-                }}
-                rowTextForSelection={(item, index) => {
-                return item;
-                }}
-                buttonStyle={styles.dropdown1BtnStyle}
-                buttonTextStyle={styles.dropdown1BtnTxtStyle}
-                renderDropdownIcon={isOpened => {
-                return <FontAwesome name={isOpened ? 'chevron-up' : 'chevron-down'} color={'#444'} size={18} />;
-                }}
-                dropdownIconPosition={'right'}
-                dropdownStyle={styles.dropdown1DropdownStyle}
-                rowStyle={styles.dropdown1RowStyle}
-                rowTextStyle={styles.dropdown1RowTxtStyle}
-            />
-            <TextInput placeholder="Description (maximum: 1000 caractères)" onChangeText={(texte) => setOeuvreDescriptionAModifier(texte)} style={styles.input} value={oeuvreDescriptionAModifier} multiline={true} numberOfLines={ 10 } /> 
+                  </View>
+                  }
+              </View>
+              )}
+              keyExtractor={(item, index) => item._id}
+          />
+        </View>        
+      </View>
+      }
+      { !show && 
+      <ScrollView>
+          { modifOeuvre ? <Text style={styles.titre2}>Modification</Text> : <Text style={styles.titre2}>Nouvel article</Text> }
+          { oeuvreDatePublicationAModifier !== 0 && <>
+          <Text style={styles.titre3}>Date de publication: { oeuvreDatePublicationAModifier }</Text>
+          </>
+          }
+          { oeuvreDateModificationAModifier !== 0 && <>
+          <Text style={styles.titre3}>Date de modification: { oeuvreDateModificationAModifier }</Text>
+          </>
+          }
+          <TextInput placeholder="Titre de l'oeuvre" onChangeText={(texte) => setOeuvreTitreAModifier(texte)}  style={styles.input} value={oeuvreTitreAModifier} />
+          <TextInput placeholder="Artiste" onChangeText={(texte) => setOeuvreAuteurAModifier(texte)}  style={styles.input} value={oeuvreAuteurAModifier} /> 
+          <TextInput placeholder="Date de création de l'oeuvre" onChangeText={(texte) => setOeuvreDateCreationAModifier(texte)}  style={styles.input} value={oeuvreDateCreationAModifier} /> 
+          <TextInput placeholder="URL de l'image" onChangeText={(texte) => setOeuvreImageUrlAModifier(texte)}  style={styles.input} value={oeuvreImageUrlAModifier} /> 
+          <SelectDropdown
+              data={types}
+              // defaultValue={types[0]}
+              onSelect={(selectedItem, index) => {
+              setOeuvreTypeAModifier(selectedItem);
+              }}
+              defaultButtonText={'Choisir le type'}
+              buttonTextAfterSelection={(selectedItem, index) => {
+              return selectedItem;
+              }}
+              rowTextForSelection={(item, index) => {
+              return item;
+              }}
+              buttonStyle={styles.dropdown1BtnStyle}
+              buttonTextStyle={styles.dropdown1BtnTxtStyle}
+              renderDropdownIcon={isOpened => {
+              return <FontAwesome name={isOpened ? 'chevron-up' : 'chevron-down'} color={'#444'} size={18} />;
+              }}
+              dropdownIconPosition={'right'}
+              dropdownStyle={styles.dropdown1DropdownStyle}
+              rowStyle={styles.dropdown1RowStyle}
+              rowTextStyle={styles.dropdown1RowTxtStyle}
+          />
+          <TextInput placeholder="Description (maximum: 1000 caractères)" onChangeText={(texte) => setOeuvreDescriptionAModifier(texte)} style={styles.input} value={oeuvreDescriptionAModifier} multiline={true} numberOfLines={ 10 } /> 
 
-            { messageErreur !== "" &&
-            <Text style={styles.alertMessage}>{ messageErreur }</Text>
-            }
-            { modifOeuvre ?
-            <TouchableHighlight style={ styles.touchable3 }>
-                <Text style={styles.btnCourt} onPress={() => { modifierOeuvre(idOeuvre); }}>Valider</Text>
-            </TouchableHighlight>
-            :
-            <TouchableHighlight style={ styles.touchable3 }>
-                <Text style={styles.btnCourt} onPress={() => { publierOeuvre(); }}>Publier</Text>
-            </TouchableHighlight>
-            }
-            {
-                oeuvreModifie && modifOeuvre !== true &&
-                <Text style={{ marginTop: 20, paddingHorizontal: 20 }}>L'article a bien été publié</Text>
-            }
-            {
-                oeuvreModifie && modifOeuvre &&
-                <Text style={{ marginTop: 20, paddingHorizontal: 20 }}>{ JSON.stringify(oeuvre.message)}</Text>
-            }
-            <TouchableHighlight style={ styles.touchable }>
-                <Text style={styles.btnCourt} onPress={() => { setModifOeuvre(false); setShow(true); setOeuvreModifiee(false); }}>Retour</Text>
-            </TouchableHighlight>
+          { messageErreur !== "" &&
+          <Text style={styles.alertMessage}>{ messageErreur }</Text>
+          }
+          {
+              oeuvreModifie && modifOeuvre !== true &&
+              <Text style={{ marginTop: 20, paddingHorizontal: 20 }}>L'article a bien été publié</Text>
+          }
+          {
+              oeuvreModifie && modifOeuvre &&
+              <Text style={{ marginTop: 20, paddingHorizontal: 20 }}>{ JSON.stringify(oeuvre.message)}</Text>
+          }
+          { modifOeuvre ?
+          <TouchableHighlight style={ styles.touchable3 }>
+              <Text style={styles.btnCourt} onPress={() => { modifierOeuvre(idOeuvre); }}>Valider</Text>
+          </TouchableHighlight>
+          :
+          <TouchableHighlight style={ styles.touchable3 }>
+              <Text style={styles.btnCourt} onPress={() => { publierOeuvre(); }}>Publier</Text>
+          </TouchableHighlight>
+          }
+          <TouchableHighlight style={ styles.touchable }>
+              <Text style={styles.btnCourt} onPress={() => { setModifOeuvre(false); setShow(true); setOeuvreModifiee(false); }}>Retour</Text>
+          </TouchableHighlight>
         </ScrollView>
         }
     </View>
@@ -338,6 +352,9 @@ const Publication = ({navigation}) => {
 export default Publication;
 
 const styles = StyleSheet.create({
+  flatList: {
+    height: "78%"
+  },
   affichageView: {
     flex: 1,
     flexDirection: "column", 
@@ -409,7 +426,8 @@ const styles = StyleSheet.create({
   touchable2: {
     width: 140,
     backgroundColor: "cornsilk",
-    borderWidth: 1, borderRadius: 15,
+    borderWidth: 1,
+    borderRadius: 15,
     alignItems: "center",
     marginLeft: 10
   },

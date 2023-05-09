@@ -3,7 +3,7 @@ const { Utilisateur } = require("./models");
 const { isValidObjectId } = require("mongoose");
 const { schemaUtilisateurJoi } = require("./verifs");
 const { genSalt, hash } = require("bcrypt");
-const { isAdmin, passwordToSend, isValidCompte } = require("./middleware");
+const { autorisation, isAdmin, passwordToSend, isValidCompte } = require("./middleware");
 
 
 const route = Router();
@@ -32,7 +32,7 @@ route.post("/", async function(request, response) {
 
 // SUPPRESSION DE COMPTE
 
-route.delete("/:id", async function(request, response) {
+route.delete("/:id", [ autorisation ], async function(request, response) {
 
     const id = request.params.id;
     if (!isValidObjectId(id)) return response.status(400).json({ message: `Profil introuvable (${id})`});
@@ -45,7 +45,7 @@ route.delete("/:id", async function(request, response) {
 
 // MODIFICATION DE COMPTE
 
-route.put("/:id", [ passwordToSend, isValidCompte ], async function(request, response) {
+route.put("/:id", [ autorisation, passwordToSend, isValidCompte ], async function(request, response) {
     
     const { body } = request;
     const id = request.params.id;

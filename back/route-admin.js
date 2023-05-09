@@ -1,11 +1,11 @@
 const { Router } = require("express");
 const { Utilisateur } = require("./models");
 const { isValidObjectId } = require("mongoose");
-const { isAdmin, passwordToSend, isValidCompte } = require("./middleware");
+const { autorisation, passwordToSend, isValidCompte } = require("./middleware");
 
 const route = Router();
 
-route.get("/utilisateurs/", [ isAdmin], async function(request, response) {
+route.get("/utilisateurs/", async function(request, response) {
 
     const getAllUtilisateurs = await Utilisateur.find().select({ _id: 1, email: 1, role: 1 });
 
@@ -17,7 +17,7 @@ route.get("/utilisateurs/", [ isAdmin], async function(request, response) {
 
 });
 
-route.get("/utilisateurs/:id", [ isAdmin], async function(request, response) {
+route.get("/utilisateurs/:id", async function(request, response) {
     
     const id = request.params.id;
 
@@ -31,7 +31,7 @@ route.get("/utilisateurs/:id", [ isAdmin], async function(request, response) {
 
 });
 
-route.delete("/utilisateurs/:id", [ isAdmin], async function(request, response) {
+route.delete("/utilisateurs/:id", [ autorisation ], async function(request, response) {
     
     const id = request.params.id;
 
@@ -43,7 +43,7 @@ route.delete("/utilisateurs/:id", [ isAdmin], async function(request, response) 
 
 });
 
-route.put("/utilisateurs/:id", [ isAdmin, passwordToSend, isValidCompte ], async function(request, response) {
+route.put("/utilisateurs/:id", [ autorisation, passwordToSend, isValidCompte ], async function(request, response) {
     
     const { body } = request;
     const id = request.params.id;

@@ -127,7 +127,7 @@ const Collection = () => {
           <TouchableWithoutFeedback onPress={
                   () => {setShow(!show);
                 }}>
-                <Text style={{fontSize: 24, textAlign: "left"}}>↶ RETOUR</Text>
+                <Text style={{fontSize: 24, textAlign: "left", marginTop: 20}}>↶ RETOUR</Text>
             </TouchableWithoutFeedback>
             <Text style={styles.titre2}>{oeuvreUnique.titre}</Text>
               <TouchableWithoutFeedback onPress={()=>zoom(zoomToggle)} style={{ width: 150,height: 200 }}>

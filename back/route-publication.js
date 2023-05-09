@@ -1,22 +1,23 @@
 const { Router } = require("express");
 const { Oeuvre } = require("./models");
-const { autorisation, isRedacteur, passwordToSend, isValidCompte } = require("./middleware");
+const { autorisation } = require("./middleware");
 
 const route = Router();
 
 route.get("/:id", async function(request, response) {
-    const id = request.params.id;
-    const getOeuvre = await Oeuvre.findById(id);
-    if (!getOeuvre) return response.status(404).json({ message: `L'oeuvre ${id} est introuvable` })
-    response.json(getOeuvre);
+    const idRedacteur = request.params.id;
+    const getOeuvres = await Oeuvre.find({idRedacteur: idRedacteur});
+    if (!getOeuvres) return response.status(404).json({ message: `Aucune oeuvre trouvée pour ce rédacteur` })
+    response.json({ message: `Les oeuvres publiées par le rédacteur id: ${idRedacteur}`, body: getOeuvres });
 });
 
 route.get("/", async function(request, response) {
     const toutesOeuvres = await Oeuvre.find();
-    response.json(toutesOeuvres);
+    if (!toutesOeuvres) return response.status(404).json({ message: `Aucune oeuvre trouvée` })
+    response.json({ message: `Toutes les oeuvres pour le mode Admin`, body: toutesOeuvres});
 });
 
-route.post("/", async function(request, response) {
+route.post("/", [ autorisation ], async function(request, response) {
 
     const { body } = request;
     console.log(body);
@@ -26,14 +27,14 @@ route.post("/", async function(request, response) {
 
 });
 
-route.delete("/:id", async function(request, response) {
+route.delete("/:id", [ autorisation ], async function(request, response) {
     const id = request.params.id;
     const responseMongo = await Oeuvre.findByIdAndRemove(id);
     if (!responseMongo) return response.status(404).json({ message: `L'oeuvre ${id} est introuvable` })
     response.json({ message: `L'oeuvre ${id} a bien été supprimé` });
 });
 
-route.put("/:id", async function(request, response) {
+route.put("/:id", [ autorisation ], async function(request, response) {
     const id = request.params.id;
     const { body } = request;
     const oeuvreOldTitle = await Oeuvre.findById(id).select({titre: 1})

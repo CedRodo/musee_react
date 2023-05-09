@@ -1,21 +1,23 @@
-import { Button, StyleSheet, Text, TextInput, View, TouchableHighlight, ImageBackground } from 'react-native'
-import React, { useEffect, useState } from 'react'
-import * as SQLite from "expo-sqlite";
-import prompt from "@powerdesigninc/react-native-prompt";
+import { StyleSheet, Text, TextInput, View, TouchableHighlight, ImageBackground } from 'react-native'
+import React, { useState, useContext } from 'react'
 import { useDispatch, useSelector } from "react-redux";
+import { ProfilContext } from '../contexts/profilContext';
+import * as SQLite from "expo-sqlite";
 
 const db = SQLite.openDatabase("demo.sqlite");
 
 const Login = ({navigation}) => {
+
   const dispatch = useDispatch();
   const isLogged = useSelector((store) => store.reducerLoggue);
   const isRole = useSelector((store) => store.reducerIsRole);
+  const { monProfil, monProfilLogin, monProfilLogout } = useContext(ProfilContext);
 
-  const [email , setEmail] = useState("")
-  const [password , setPassword] = useState("")
-  const [modeCompte, setModeCompte] = useState("inscription")
-  const [show, setShow] = useState(true)
-  const [showDelete, setShowDelete] = useState(false)
+  const [email , setEmail] = useState("");
+  const [password , setPassword] = useState("");
+  const [modeCompte, setModeCompte] = useState("inscription");
+  const [show, setShow] = useState(true);
+  const [showDelete, setShowDelete] = useState(false);
   const [tokenUtilisateur, setTokenUtilisateur] = useState("");
 
   const [emailCompteModification, setEmailCompteModification] = useState("");
@@ -27,41 +29,19 @@ const Login = ({navigation}) => {
 
   const [messageErreur, setMessageErreur] = useState("");
 
-  useEffect(function() {
-    
-    db.transaction(function(tx) {
-      tx.executeSql(`DROP TABLE IF EXISTS user`,
-                  function(transact, resultat) { console.log("La table user a été supprimée");},
-                  function(transact, err) { console.log("Erreur lors de la suppression: ", err); })
-      })
-    db.transaction(function(tx) {
-      tx.executeSql(`CREATE TABLE IF NOT EXISTS user (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    idUtilisateur VARCHAR(500),
-                    email VARCHAR(500),
-                    role VARCHAR(500),
-                    isAdmin BOOLEAN,
-                    isRedacteur BOOLEAN,
-                    token VARCHAR(500)
-                  )`,
-                  [],
-                  function(transact, resultat) { console.log("La table user a été créée");},
-                  function(transact, err) { console.log("Erreur lors de la création"); })
-      })
-  }, [])
-
   function getToken() {
     
     db.transaction(function(tx) {
-          tx.executeSql(`SELECT token FROM user WHERE idUtilisateur = ?`,
-                      [idUtilisateurConnecte],
+          tx.executeSql(`SELECT * FROM user`,
+                      [],
                       function(transact, resultat) { console.log("SELECT getToken réussi: ", resultat.rows._array[0]); setTokenUtilisateur(resultat.rows._array[0].token); },
                       function(transact, err) { console.log("SELECT échec", err); })
           });
+
   }
     
 
-   const enreg = async () => {                                /////////////////
+   const enreg = async () => {
       let lesHeaders = {
         "Accept": "*/*",
         "Content-Type": "application/json"
@@ -69,7 +49,7 @@ const Login = ({navigation}) => {
       let lesChamps = JSON.stringify({
         "email" : email,  
         "password" : password,
-        "role" : "admin"  //<=== ?
+        "role" : "utilisateur"
       });
 
       let response = await fetch("http://10.0.2.2:4004/compte", { 
@@ -79,7 +59,6 @@ const Login = ({navigation}) => {
       });
 
       let data = await response.json();
-      // console.log("INSCRIPTION: ", data);
 
       setMessageErreur("");
       setIdUtilisateurConnecte("");
@@ -88,37 +67,25 @@ const Login = ({navigation}) => {
       setEmailCompteModification("");
 
       if (data.length > 0) {
+
         dispatch({type: "NONLOGGUE"});
+
       } else if (data.message !== "Le compte a été créé") {
+
         return setMessageErreur(data.message);
+
       } else {      
+
         setShow(true);
         setShowDelete(false);
-        dispatch({type: "LOGGUE"});
-        dispatch({type: "isAdminFalse"});
-        dispatch({type: "isRedacteurFalse"});
-        setIdUtilisateurConnecte(data.body._id);
-        setEmailUtilisateurConnecte(data.body.email);
-        setRoleUtilisateurConnecte(data.body.role);
-        setEmailCompteModification(data.body.email);
+        logguage();
 
-        db.transaction(function(tx) {
-            tx.executeSql(`DELETE FROM user`,
-                        [],
-                        function(transact, resultat) { console.log(); console.log("SUPPRESSION réussie");},
-                        function(transact, err) { console.log("SUPPRESSION échec", err); })
-            })
-
-        db.transaction(function(tx) {
-            tx.executeSql(`INSERT into user VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                        [null, data.body._id, data.body.email, data.body.role, false, false, data.token],
-                        function(transact, resultat) { console.log(db); console.log("INSERT réussi");},
-                        function(transact, err) { console.log("INSERT échec", err); })
-            })
       }
+
     }
 
-    const logguage = async () => {                                ///////////////
+    const logguage = async () => {  
+      
       let lesHeaders = {
         "Accept": "*/*",
         "Content-Type": "application/json"
@@ -137,102 +104,119 @@ const Login = ({navigation}) => {
 
       let data = await response.json();
       
-      // console.log(data);
-      
       if (data.length > 0) {
+
         return dispatch({ type: "NONLOGGUE" });
+
       } else if (data.message !== "Bienvenue") {
+
         return setMessageErreur(data.message);
+
       } else {
+
         setMessageErreur("");
         setShowDelete(false);
         setIdUtilisateurConnecte(data.body._id);
+        monProfil.id = data.body._id;
         setEmailUtilisateurConnecte(data.body.email);
+        monProfil.email = data.body.email;
         setRoleUtilisateurConnecte(data.body.role);
         setEmailCompteModification(data.body.email);
-        // console.log("DATA isRedacteur", data.isRedacteur);
-        // console.log("DATA isAdmin", data.isAdmin);
-        data.isAdmin ? dispatch({type: "isAdminTrue"}) : dispatch({type: "isAdminFalse"})
-        data.isRedacteur ? dispatch({type: "isRedacteurTrue"}) : dispatch({type: "isRedacteurFalse"})
+        
+        data.isAdmin ? dispatch({type: "isAdminTrue"}) : dispatch({type: "isAdminFalse"});
+        data.isRedacteur ? dispatch({type: "isRedacteurTrue"}) : dispatch({type: "isRedacteurFalse"});
         dispatch({type: "LOGGUE"});
-        // console.log("isRole isAdmin", isRole.isAdmin);
-        // console.log("isRole isRedacteur", isRole.isRedacteur);
+    
+        db.transaction(function(tx) {
+          tx.executeSql(`DROP TABLE IF EXISTS user`,
+                      function(transact, resultat) { console.log("La table user a été supprimée");},
+                      function(transact, err) { console.log("Erreur lors de la suppression: ", err); })
+          })
 
         db.transaction(function(tx) {
-            tx.executeSql(`DELETE FROM user`,
-                        [],
-                        function(transact, resultat) { console.log(); console.log("SUPPRESSION réussie");},
-                        function(transact, err) { console.log("SUPPRESSION échec", err); })
+          tx.executeSql(`CREATE TABLE IF NOT EXISTS user (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        token VARCHAR(500)
+                      )`,
+                      [],
+                      function(transact, resultat) { console.log("La table user a été créée");},
+                      function(transact, err) { console.log("Erreur lors de la création"); })
             })
 
         db.transaction(function(tx) {
-            tx.executeSql(`INSERT into user VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                        [null, data.body._id, data.body.email, data.body.role, data.isAdmin, data.isRedacteur, data.token],
+            tx.executeSql(`INSERT into user VALUES (?, ?)`,
+                        [null, data.token],
                         function(transact, resultat) { console.log(db); console.log("INSERT réussi");},
                         function(transact, err) { console.log("INSERT échec", err); })
             })
 
       }
 
-      console.log("TOKEN: ", data.token);
+      setTokenUtilisateur(data.token);
+      monProfil.token = data.token
       
     }
 
     async function supprimerUtilisateur(id) {
-            // console.log("supprimé");
-            let response = await fetch("http://10.0.2.2:4004/admin/utilisateurs/" + id, {
-            method: "DELETE"
-        });
 
-        let data = await response.json();
+      getToken();
+      
+      let lesHeaders = {
+        "Accept": "*/*",
+        "Content-Type": "application/json",
+        "token": monProfil.token
+      }
 
-        console.log(data, " a été supprimé");
-        deconnexion();
+      let response = await fetch("http://10.0.2.2:4004/admin/utilisateurs/" + id, {
+        method: "DELETE",
+        headers : lesHeaders
+      });
+
+      let data = await response.json();
+
+      deconnexion();
+      navigation.navigate("Accueil");
+
     }
 
     async function modifierUtilisateur(id) {
-        // console.log("modification de: " + id);
-        
-        let lesHeaders = {
+
+      getToken();
+      
+      let lesHeaders = {
         "Accept": "*/*",
-        "Content-Type": "application/json"
-        }
-        let lesChamps = JSON.stringify({
+        "Content-Type": "application/json",
+        "token": monProfil.token
+      }
+
+      let lesChamps = JSON.stringify({
         "email" : emailCompteModification,
         "password" : passwordCompteModification,
         "role" : roleUtilisateurConnecte
-        });
+      });
 
-        // console.log(lesChamps);
-
-        let response = await fetch("http://10.0.2.2:4004/compte/" + id, { 
+      let response = await fetch("http://10.0.2.2:4004/compte/" + id, { 
         method: "PUT",
         body: lesChamps,
         headers : lesHeaders
-        });
+      });
 
-        // console.log("RESPONSE: ", response);
+      let data = await response.json();
 
-        let data = await response.json();
+      if (data.id !== "undefined") {
 
-        console.log(data, " a été modifié");
+        setEmailUtilisateurConnecte(emailCompteModification);
+        setModeCompte("");
+        setShowDelete(false);
+        deconnexion();
+        navigation.navigate("Mon compte");
 
-        if (data.id !== "undefined") {
-
-          db.transaction(function(tx) {
-              tx.executeSql(`UPDATE user SET email = ?, token = ? WHERE idUtilisateur = ?`,
-                          [data.body.email, tokenUtilisateur, idUtilisateurConnecte],
-                          function(transact, resultat) { console.log(db); console.log("UPDATE réussi");},
-                          function(transact, err) { console.log("UPDATE échec", err); })
-              })
-          setEmailUtilisateurConnecte(emailCompteModification);
-          setModeCompte("");
-          setShowDelete(false);
-        } 
+      } 
 
     }
 
     function deconnexion(){
+
       dispatch({type: "NONLOGGUE"});
       setModeCompte("");
       setShow(true);
@@ -240,7 +224,7 @@ const Login = ({navigation}) => {
       setPassword("");
       dispatch({type: "isAdminFalse"});
       dispatch({type: "isRedacteurFalse"});
-      navigation.navigate("Accueil");
+
     }
 
 
@@ -321,8 +305,8 @@ const Login = ({navigation}) => {
     </View>
     :
     <View>
-      <Text style={styles.titre}>Bienvenue, {emailUtilisateurConnecte}!</Text> 
-      <TouchableHighlight onPress={deconnexion} style={ styles.touchable2 }>
+      <Text style={styles.titre}>Bienvenue, { monProfil.email }!</Text> 
+      <TouchableHighlight onPress={ () => { deconnexion(); navigation.navigate("Mon compte"); } } style={ styles.touchable2 }>
          <Text style={styles.btnCourt}>Se déconnecter</Text>
       </TouchableHighlight>
       <TouchableHighlight style={ styles.touchable2 }>

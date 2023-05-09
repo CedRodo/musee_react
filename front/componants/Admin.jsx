@@ -1,10 +1,13 @@
 import { StyleSheet, Text, View, FlatList, Button } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
+import { ProfilContext } from '../contexts/profilContext';
 import { TextInput, TouchableHighlight } from "react-native-gesture-handler";
 import SelectDropdown from 'react-native-select-dropdown';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
-const Admin = ({navigation}) => {
+const Admin = () => {
+
+    const { monProfil } = useContext(ProfilContext);
 
     const [users, setUsers] = useState([]);
     const [modifCompte, setModifCompte] = useState(false);
@@ -26,47 +29,46 @@ const Admin = ({navigation}) => {
     }
 
     async function supprimerUtilisateur(id) {
-        // console.log("supprimé");
+        
+        let lesHeaders = {
+          "Accept": "*/*",
+          "Content-Type": "application/json",
+          "token": monProfil.token
+        }
 
         let response = await fetch("http://10.0.2.2:4004/admin/utilisateurs/" + id, {
-            method: "DELETE"
+          method: "DELETE",
+          headers : lesHeaders
         });
 
         let data = await response.json();
 
         setUtilisateur(data);
 
-        console.log(data, " a été supprimé");
         affiche();
     }
 
     async function modifierUtilisateur(id) {
-        // console.log("modification de: " + id);
-        // console.log("roleCompte: " + roleCompte);
         
         let lesHeaders = {
-        "Accept": "*/*",
-        "Content-Type": "application/json"
+          "Accept": "*/*",
+          "Content-Type": "application/json",
+          "token": monProfil.token
         }
-        let lesChamps = JSON.stringify({
-        "email" : emailCompte,
-        "password" : passwordCompte,
-        "role" : roleCompte
-        });
 
-        // console.log(lesChamps);
+        let lesChamps = JSON.stringify({
+          "email" : emailCompte,
+          "password" : passwordCompte,
+          "role" : roleCompte
+        });
 
         let response = await fetch("http://10.0.2.2:4004/admin/utilisateurs/" + id, { 
-        method: "PUT",
-        body: lesChamps,
-        headers : lesHeaders
+          method: "PUT",
+          body: lesChamps,
+          headers : lesHeaders
         });
 
-        // console.log("RESPONSE: ", response);
-
         let data = await response.json();
-
-        console.log(data, " a été modifié");
 
         setUtilisateur(data);
         
